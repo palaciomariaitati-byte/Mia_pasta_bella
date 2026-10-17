@@ -148,3 +148,12 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Solapas de capítulos con espacio holgado vertical para evitar recortes */
+.chapter-tabs-scroll {
+  overflow-x: auto;
+  overflow-y: visible;
+  padding-top: 10px;
+  padding-bottom: 14px;
+  -webkit-overflow-scrolling: touch;
+}

@@ -258,40 +258,42 @@ export function BookCatalog({
         {/* ============================================================== */}
         {/* 2. BARRA DE HERRAMIENTAS: BÚSQUEDA + MODO ANFITRIÓN (COMENSALES) */}
         {/* ============================================================== */}
-        <div className="mb-6 space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
-            {/* Buscador Instantáneo (5 columnas) */}
-            <div className="lg:col-span-5 relative">
-              <Search className="absolute left-4 top-3.5 h-4 w-4 text-terracota-500 pointer-events-none" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Buscar por variedad o ingrediente (ej: salmón, lomo, ricota...)"
-                className="w-full pl-11 pr-10 py-3 rounded-2xl border border-[#DFD3BD] bg-white text-xs sm:text-sm text-[#2C1810] placeholder:text-stone-400 focus:outline-none focus:border-terracota-600 focus:ring-2 focus:ring-terracota-200 shadow-xs transition-all"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery("")}
-                  className="absolute right-3.5 top-3 text-stone-400 hover:text-stone-700 p-1"
-                  title="Limpiar búsqueda"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              )}
-            </div>
+        {/* 2. BARRA DE HERRAMIENTAS: BÚSQUEDA Y CALCULADOR DE PORCIONES */}
+        {/* ============================================================== */}
+        <div className="mb-6 space-y-3.5">
+          {/* Fila 1: Buscador Instantáneo Centrado */}
+          <div className="max-w-2xl mx-auto relative">
+            <Search className="absolute left-4 top-3.5 h-4 w-4 text-terracota-500 pointer-events-none" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Buscar por variedad o ingrediente (ej: salmón, lomo, ricota, espinaca...)"
+              className="w-full pl-11 pr-10 py-3.5 rounded-2xl border border-[#DFD3BD] bg-white text-xs sm:text-sm text-[#2C1810] placeholder:text-stone-400 focus:outline-none focus:border-terracota-600 focus:ring-2 focus:ring-terracota-200 shadow-sm transition-all"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-3.5 top-3.5 text-stone-400 hover:text-stone-700 p-1"
+                title="Limpiar búsqueda"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
 
-            {/* FEATURE PRO: Calculadora de Porciones de Fábrica (7 columnas) */}
-            <div className="lg:col-span-7 bg-white rounded-2xl border border-[#DFD3BD] p-2 sm:p-2.5 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-2.5">
-              <div className="flex items-center gap-2 pl-2">
+          {/* Fila 2: Calculador de Porciones de Fábrica (Fila independiente centrada, Cero Choques) */}
+          <div className="max-w-3xl mx-auto bg-white rounded-2xl border border-[#DFD3BD] p-3 sm:px-5 sm:py-3 shadow-xs">
+            <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3.5">
+              <div className="flex items-center gap-1.5 flex-shrink-0">
                 <span className="text-base">🧮</span>
-                <span className="text-xs font-bold text-[#2C1810] whitespace-nowrap">
-                  Calculador de Fábrica: ¿Cuántas porciones necesitás?
+                <span className="text-xs sm:text-sm font-bold text-[#2C1810] whitespace-nowrap">
+                  Calculador de Porciones:
                 </span>
               </div>
 
-              {/* Botones Píldora de Selección */}
-              <div className="flex items-center gap-1.5 flex-wrap justify-center sm:justify-end w-full sm:w-auto">
+              {/* Botones Píldora de Selección con espacio holgado */}
+              <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap justify-center">
                 {[
                   { label: "Ver Todo", value: null },
                   { label: "2 porciones", value: 2 },
@@ -304,10 +306,10 @@ export function BookCatalog({
                     <button
                       key={pill.label}
                       onClick={() => setComensalesTarget(pill.value)}
-                      className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-xs active:scale-95 ${
+                      className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shadow-xs active:scale-95 whitespace-nowrap ${
                         isSelected
-                          ? "bg-gradient-to-r from-terracota-600 to-terracota-700 text-white shadow-terracota-900/20 ring-2 ring-amber-300"
-                          : "bg-crema-100 text-stone-700 hover:bg-crema-200"
+                          ? "bg-gradient-to-r from-terracota-600 to-terracota-700 text-white shadow-md shadow-terracota-900/20 ring-2 ring-amber-300 ring-offset-1 ring-offset-crema-50"
+                          : "bg-crema-100 text-stone-700 hover:bg-crema-200 border border-crema-300/70"
                       }`}
                     >
                       {pill.label}
@@ -318,20 +320,20 @@ export function BookCatalog({
             </div>
           </div>
 
-          {/* Banner Dorado suave si el Modo Anfitrión está activo */}
+          {/* Banner Dorado suave si el Calculador de Fábrica está activo */}
           {comensalesTarget && (
-            <div className="rounded-2xl border border-amber-300/80 bg-gradient-to-r from-amber-50 via-dorado-100/60 to-amber-50 p-3.5 text-xs text-amber-950 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs animate-fade-in">
+            <div className="max-w-3xl mx-auto rounded-2xl border border-amber-300/80 bg-gradient-to-r from-amber-50 via-dorado-100/60 to-amber-50 p-3.5 text-xs text-amber-950 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs animate-fade-in">
               <div className="flex items-center gap-2.5 text-center sm:text-left">
                 <Sparkles className="h-4 w-4 text-amber-700 fill-current flex-shrink-0" />
                 <span>
-                  <strong>Modo Anfitrión activo ({comensalesTarget} comensales):</strong> Te calculamos la cantidad exacta de bandejas para servir platos generosos sin desperdicio.
+                  <strong>Cálculo de Fábrica activo ({comensalesTarget} porciones):</strong> Te sugerimos cuántas cajas encargar para rendir tus porciones exactas sin desperdicio.
                 </span>
               </div>
               <button
                 onClick={() => setComensalesTarget(null)}
                 className="text-[11px] font-black text-amber-900 hover:text-terracota-700 underline uppercase tracking-wider flex-shrink-0"
               >
-                Desactivar cálculo
+                Ver todo el catálogo
               </button>
             </div>
           )}
@@ -341,14 +343,14 @@ export function BookCatalog({
         {/* 3. BARRA DE CAPÍTULOS DEL LIBRO (SIN RECORTES VERTICALES) */}
         {/* ============================================================== */}
         {!searchQuery && (
-          <div className="mb-6 relative">
-            <div className="flex items-center gap-2 overflow-x-auto py-3 px-1 no-scrollbar justify-start lg:justify-center">
+          <div className="mb-6 relative overflow-visible">
+            <div className="chapter-tabs-scroll flex items-center gap-2.5 overflow-x-auto overflow-y-visible py-3.5 px-2 no-scrollbar justify-start lg:justify-center">
               {/* Portada & Historia */}
               <button
                 onClick={() => handleSelectPage(0)}
                 className={`flex-shrink-0 flex items-center gap-2 px-5 py-3 rounded-2xl text-xs sm:text-sm font-bold transition-all shadow-sm active:scale-95 leading-normal ${
                   activePageIndex === 0
-                    ? "bg-[#2C1810] text-amber-200 border-2 border-amber-400 shadow-lg scale-102"
+                    ? "bg-[#2C1810] text-amber-200 border-2 border-amber-400 shadow-md ring-2 ring-amber-300/50"
                     : "bg-white text-stone-700 hover:bg-[#F5EFE0] border border-[#DFD3BD]"
                 }`}
               >
@@ -367,7 +369,7 @@ export function BookCatalog({
                     onClick={() => handleSelectPage(pageNum)}
                     className={`flex-shrink-0 flex items-center gap-2 px-5 py-3 rounded-2xl text-xs sm:text-sm font-bold transition-all shadow-sm active:scale-95 leading-normal ${
                       isActive
-                        ? "bg-gradient-to-r from-terracota-600 to-terracota-700 text-white border-2 border-amber-300 shadow-lg scale-102"
+                        ? "bg-gradient-to-r from-terracota-600 to-terracota-700 text-white border-2 border-amber-300 shadow-md ring-2 ring-amber-300/50"
                         : "bg-white text-stone-700 hover:bg-[#F5EFE0] border border-[#DFD3BD]"
                     }`}
                   >
