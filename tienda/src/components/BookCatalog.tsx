@@ -1,28 +1,29 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import Image from "next/image";
 import {
-  BookOpen,
-  ChevronLeft,
-  ChevronRight,
-  Plus,
-  Clock,
-  Users,
+  ShoppingBag,
   Check,
-  Sparkles,
-  Utensils,
-  Award,
-  Layers,
-  Snowflake,
-  RotateCcw,
-  QrCode,
   Search,
   X,
-  ShoppingBag,
   ArrowRight,
-  ChefHat,
-  HeartHandshake,
+  Clock,
+  Users,
+  Snowflake,
+  Heart,
+  Sparkles,
+  Award,
+  ChevronDown,
+  Filter,
+  MessageCircle,
+  ShieldCheck,
+  Home,
+  Truck,
+  Leaf,
+  RotateCcw,
+  QrCode,
+  MapPin,
   Calendar,
 } from "lucide-react";
 import { CategoriaItem, ProductoItem, TiendaConfig } from "@/lib/db";
@@ -36,11 +37,48 @@ interface BookCatalogProps {
   onOpenQR?: () => void;
 }
 
-// Convertir número a numeración romana para los capítulos del libro
-const toRoman = (num: number) => {
-  const romans = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"];
-  return romans[num - 1] || `${num}`;
+// ==============================================================================
+// FOTOS PREDETERMINADAS DE ALTA DEFINICIÓN POR CATEGORÍA
+// (Fallback robusto editable directamente desde el Admin / Supabase)
+// ==============================================================================
+const CATEGORY_DEFAULT_IMAGES: Record<string, string> = {
+  tallarines:
+    "https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=800&q=80",
+  sorrentinos:
+    "https://images.unsplash.com/photo-1587740114974-98a097d31fd8?auto=format&fit=crop&w=800&q=80",
+  ravioles:
+    "https://images.unsplash.com/photo-1546549032-9571cd6b27df?auto=format&fit=crop&w=800&q=80",
+  noquis:
+    "https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=800&q=80",
+  tortellinis:
+    "https://images.unsplash.com/photo-1587740114974-98a097d31fd8?auto=format&fit=crop&w=800&q=80",
+  prepizzas:
+    "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80",
+  empanadas:
+    "https://images.unsplash.com/photo-1626700051175-6818013e1d4f?auto=format&fit=crop&w=800&q=80",
+  tartas:
+    "https://images.unsplash.com/photo-1519869325930-281384150729?auto=format&fit=crop&w=800&q=80",
 };
+
+/**
+ * Resuelve la imagen de la categoría de forma totalmente dinámica:
+ * 1. cat.imagen_url (si está definida en BD o store.json)
+ * 2. La primera foto real de un producto de esa categoría que tenga imagen_url
+ * 3. Fallback a la foto preset de alta resolución
+ */
+function getCategoryImageUrl(cat: CategoriaItem, allProducts: ProductoItem[]): string {
+  if ((cat as any).imagen_url) return (cat as any).imagen_url;
+  const prodWithImg = allProducts.find(
+    (p) => p.categoria_id === cat.id && p.imagen_url && p.imagen_url.trim().length > 0
+  );
+  if (prodWithImg?.imagen_url) return prodWithImg.imagen_url;
+
+  const slug = (cat.slug || cat.id).toLowerCase();
+  for (const [key, url] of Object.entries(CATEGORY_DEFAULT_IMAGES)) {
+    if (slug.includes(key)) return url;
+  }
+  return "https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=800&q=80";
+}
 
 export function BookCatalog({
   categorias,
@@ -49,90 +87,51 @@ export function BookCatalog({
   onOpenSplash,
   onOpenQR,
 }: BookCatalogProps) {
-  // 0 = Portada / Manifiesto, 1..N = Capítulos de categorías
-  const [activePageIndex, setActivePageIndex] = useState<number>(0);
-  const [flipDirection, setFlipDirection] = useState<"next" | "prev">("next");
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [comensalesTarget, setComensalesTarget] = useState<number | null>(null);
   const [addedId, setAddedId] = useState<string | null>(null);
 
-  // NUEVO FEATURE PRO: Calculadora de Comensales ("Modo Anfitrión")
-  const [comensalesTarget, setComensalesTarget] = useState<number | null>(null);
+  const { addItem, setIsCartOpen } = useCart();
 
-  const { items, addItem, totalCount, totalPorciones, totalPrice, setIsCartOpen } = useCart();
+  const telefonoLimpio = config.whatsapp_numero.replace(/[^0-9]/g, "");
+  const whatsappUrl = `https://wa.me/${telefonoLimpio}?text=${encodeURIComponent(
+    config.whatsapp_mensaje
+  )}`;
 
-  const totalPages = categorias.length + 1;
-  const currentCategory = activePageIndex > 0 ? categorias[activePageIndex - 1] : null;
+  // Filtrado reactivo de productos
+  const filteredProducts = useMemo(() => {
+    let prods = productos;
 
-  // Filtrado de búsqueda instantánea
-  const searchResults = useMemo(() => {
+    // 1. Filtrar por categoría seleccionada
+    if (selectedCategoryId) {
+      prods = prods.filter((p) => p.categoria_id === selectedCategoryId);
+    }
+
+    // 2. Filtrar por búsqueda textual
     const q = searchQuery.trim().toLowerCase();
-    if (!q) return [];
-    return productos.filter(
-      (p) =>
-        p.nombre.toLowerCase().includes(q) ||
-        (p.ingredientes && p.ingredientes.toLowerCase().includes(q)) ||
-        (p.categoria_nombre && p.categoria_nombre.toLowerCase().includes(q))
-    );
-  }, [searchQuery, productos]);
-
-  // Filtrar productos del capítulo activo
-  const categoryProducts = currentCategory
-    ? productos.filter((p) => p.categoria_id === currentCategory.id)
-    : [];
-
-  // Navegación por teclado (Flechas izquierda/derecha)
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Ignorar si el usuario está tipeando en un input o textarea
-      if (
-        document.activeElement?.tagName === "INPUT" ||
-        document.activeElement?.tagName === "TEXTAREA"
-      ) {
-        return;
-      }
-
-      if (e.key === "ArrowRight") {
-        if (activePageIndex < totalPages - 1) {
-          setFlipDirection("next");
-          setActivePageIndex((prev) => prev + 1);
-          window.scrollTo({ top: 120, behavior: "smooth" });
-        }
-      } else if (e.key === "ArrowLeft") {
-        if (activePageIndex > 0) {
-          setFlipDirection("prev");
-          setActivePageIndex((prev) => prev - 1);
-          window.scrollTo({ top: 120, behavior: "smooth" });
-        }
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [activePageIndex, totalPages]);
-
-  const goToNextPage = () => {
-    if (activePageIndex < totalPages - 1) {
-      setFlipDirection("next");
-      setActivePageIndex((prev) => prev + 1);
-      window.scrollTo({ top: 120, behavior: "smooth" });
+    if (q) {
+      prods = prods.filter(
+        (p) =>
+          p.nombre.toLowerCase().includes(q) ||
+          (p.ingredientes && p.ingredientes.toLowerCase().includes(q)) ||
+          (p.categoria_nombre && p.categoria_nombre.toLowerCase().includes(q))
+      );
     }
-  };
 
-  const goToPrevPage = () => {
-    if (activePageIndex > 0) {
-      setFlipDirection("prev");
-      setActivePageIndex((prev) => prev - 1);
-      window.scrollTo({ top: 120, behavior: "smooth" });
+    // 3. Filtrar por recomendador de comensales (Modo Anfitrión)
+    if (comensalesTarget) {
+      prods = prods.filter((p) => {
+        const rinde = p.rinde_porciones || 2;
+        return rinde >= 2;
+      });
     }
-  };
 
-  const handleSelectPage = (index: number) => {
-    setFlipDirection(index >= activePageIndex ? "next" : "prev");
-    setActivePageIndex(index);
-    window.scrollTo({ top: 120, behavior: "smooth" });
-  };
+    return prods;
+  }, [productos, selectedCategoryId, searchQuery, comensalesTarget]);
 
-  const handleAddToCart = (producto: ProductoItem, cantidad: number = 1) => {
+  // Manejo de adición al carrito con feedback visual
+  const handleAddToCart = (producto: ProductoItem) => {
     addItem(
       {
         id: producto.id,
@@ -143,745 +142,621 @@ export function BookCatalog({
         unidad_medida: producto.unidad_medida,
         rinde_porciones: producto.rinde_porciones || 2,
       },
-      cantidad
+      1
     );
 
     setAddedId(producto.id);
-    setTimeout(() => setAddedId(null), 1600);
+    setTimeout(() => setAddedId(null), 1400);
   };
 
-  // Determinar si una variedad es salsa (para no sugerir porciones de plato principal)
-  const isSauce = (p: ProductoItem) => {
-    const text = `${p.nombre} ${p.categoria_nombre}`.toLowerCase();
-    return (
-      text.includes("salsa") ||
-      text.includes("filetto") ||
-      text.includes("pesto") ||
-      text.includes("bolognesa") ||
-      text.includes("crema") ||
-      text.includes("rosa") ||
-      text.includes("pomodoro")
-    );
+  const scrollToSection = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" });
+    }
   };
+
+  const handleSelectCategory = (catId: string | null) => {
+    setSelectedCategoryId(catId);
+    scrollToSection("productos");
+  };
+
+  const currentCategoryName = useMemo(() => {
+    if (!selectedCategoryId) return null;
+    const cat = categorias.find((c) => c.id === selectedCategoryId);
+    return cat ? cat.nombre : null;
+  }, [selectedCategoryId, categorias]);
 
   return (
-    <div className="py-6 sm:py-10 pb-28 sm:pb-36 overflow-visible">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 overflow-visible">
-        {/* ============================================================== */}
-        {/* 1. HEADER EDITORIAL COMPACTO DE ALTA TRATTORIA */}
-        {/* ============================================================== */}
-        <div className="relative mb-8 rounded-3xl border border-[#E6D8C3] bg-gradient-to-r from-[#FAF6EE] via-[#FFFDF9] to-[#F5EFE0] p-5 sm:p-7 shadow-sm overflow-hidden">
-          {/* Textura y halo cálido */}
-          <div className="absolute top-0 right-0 -mr-16 -mt-16 w-60 h-60 bg-amber-400/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute bottom-0 left-1/3 w-48 h-48 bg-oliva-500/8 rounded-full blur-2xl pointer-events-none" />
-
-          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-            {/* IDENTIDAD: LOGO + TÍTULOS */}
-            <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
-              {/* Contenedor del Logo con dimensiones fijas estrictas */}
-              <div className="relative h-16 w-16 sm:h-20 sm:w-20 rounded-full border-2 border-amber-400 bg-white p-1 shadow-[0_0_20px_rgba(212,175,55,0.3)] flex-shrink-0 overflow-hidden">
-                <div className="relative h-full w-full rounded-full overflow-hidden">
-                  <Image
-                    src="/images/logo.jpg"
-                    alt="Mia Pasta Bella"
-                    fill
-                    className="object-cover rounded-full"
-                    sizes="(max-width: 640px) 64px, 80px"
-                    priority
-                  />
-                </div>
-              </div>
-
-              <div>
-                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                  <span className="font-serif text-2xl sm:text-3xl font-black text-[#2C1810] tracking-tight">
-                    {config.nombre_tienda || "Mia Pasta Bella"}
-                  </span>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-oliva-100 text-oliva-900 border border-oliva-300/80 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider">
-                    <Award className="h-3 w-3 text-oliva-700" />
-                    Fábrica de Autor
-                  </span>
-                </div>
-                <p className="font-serif italic text-xs sm:text-sm text-terracota-800/90 mt-1 max-w-md">
-                  &ldquo;{config.slogan_principal || "Pastas artesanales con masa madre viva y sémola candeal."}&rdquo;
-                </p>
-              </div>
-            </div>
-
-            {/* BADGE TANDA ACTIVA + ACCIONES COMPACTAS */}
-            <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row items-center gap-3">
-              {/* Card Tanda de Elaboración */}
-              <div className="rounded-2xl border border-amber-500/30 bg-[#2C1810] text-white px-4 py-3 shadow-md flex items-center gap-3 min-w-[260px]">
-                <div className="relative flex h-3 w-3 flex-shrink-0">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500" />
-                </div>
-                <div className="text-left text-xs">
-                  <span className="text-[10px] text-amber-300 font-extrabold uppercase tracking-wider block">
-                    🌾 Tanda Fresca Activa
-                  </span>
-                  <strong className="text-white text-xs font-bold block">
-                    {config.proxima_tanda_fecha || "Viernes 17 de Octubre"}
-                  </strong>
-                  <span className="text-[10px] text-stone-300">
-                    72h heladera · 90d freezer
-                  </span>
-                </div>
-              </div>
-
-              {/* Botones de utilidad: Portada Splash y Menú QR */}
-              <div className="flex items-center gap-2">
-                {onOpenSplash && (
-                  <button
-                    onClick={onOpenSplash}
-                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-stone-700 bg-white hover:bg-stone-50 border border-stone-200 transition-all shadow-xs active:scale-95"
-                    title="Ver Portada de Bienvenida"
-                  >
-                    <RotateCcw className="h-3.5 w-3.5 text-terracota-600" />
-                    <span className="hidden sm:inline">Portada</span>
-                  </button>
-                )}
-                {onOpenQR && (
-                  <button
-                    onClick={onOpenQR}
-                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-amber-950 bg-amber-100 hover:bg-amber-200 border border-amber-300 transition-all shadow-xs active:scale-95"
-                    title="Ver y Descargar Código QR"
-                  >
-                    <QrCode className="h-3.5 w-3.5 text-amber-800" />
-                    <span className="hidden sm:inline">Menú QR</span>
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
+    <div className="w-full">
+      {/* ============================================================== */}
+      {/* 1. HERO BANNER PRINCIPAL (EDITORIAL FULL-WIDTH) */}
+      {/* ============================================================== */}
+      <section
+        id="inicio"
+        className="relative min-h-[580px] sm:min-h-[640px] flex items-center justify-center overflow-hidden bg-stone-950 text-white"
+      >
+        {/* FOTO PANORÁMICA DE FONDO (AMASADO ARTESANAL / SÉMOLA CANDEAL) */}
+        <div className="absolute inset-0 z-0">
+          <Image
+            src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=2000&q=80"
+            alt="Amasado de Pastas Artesanales Mía Pasta Bella"
+            fill
+            className="object-cover object-center opacity-45 scale-105 transform motion-safe:animate-pulse"
+            priority
+            sizes="100vw"
+          />
+          {/* DEGRADADOS Y VIÑETA DE CINE EDITORIAL */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#212A1B] via-stone-950/70 to-stone-950/85" />
+          <div className="absolute inset-0 bg-radial-gradient from-transparent via-stone-950/50 to-stone-950/90 pointer-events-none" />
         </div>
 
-        {/* ============================================================== */}
-        {/* 2. BARRA DE HERRAMIENTAS: BÚSQUEDA + MODO ANFITRIÓN (COMENSALES) */}
-        {/* ============================================================== */}
-        {/* 2. BARRA DE HERRAMIENTAS: BÚSQUEDA Y CALCULADOR DE PORCIONES */}
-        {/* ============================================================== */}
-        <div className="mb-6 space-y-3.5">
-          {/* Fila 1: Buscador Instantáneo Centrado */}
-          <div className="max-w-2xl mx-auto relative">
-            <Search className="absolute left-4 top-3.5 h-4 w-4 text-terracota-500 pointer-events-none" />
+        {/* CONTENIDO EDITORIAL CENTRAL */}
+        <div className="relative z-10 mx-auto max-w-5xl px-4 py-16 sm:px-6 lg:px-8 text-center flex flex-col items-center">
+          {/* LÍNEA DE ENCABEZADO CON CORAZÓN */}
+          <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-amber-400/15 border border-amber-400/40 backdrop-blur-md mb-6 animate-fadeIn">
+            <span className="h-px w-6 sm:w-10 bg-gradient-to-r from-transparent to-amber-300" />
+            <Heart className="h-4 w-4 text-terracota-400 fill-terracota-400" />
+            <span className="text-xs sm:text-sm font-bold tracking-widest uppercase text-amber-200">
+              Pastas Artesanales de Autor
+            </span>
+            <span className="h-px w-6 sm:w-10 bg-gradient-to-l from-transparent to-amber-300" />
+          </div>
+
+          {/* TÍTULO PRINCIPAL EN TIPOGRAFÍA SERIF */}
+          <h1 className="font-serif text-3xl sm:text-5xl md:text-6xl font-black text-white tracking-tight leading-[1.15] max-w-4xl drop-shadow-lg">
+            El verdadero sabor de la pasta,{" "}
+            <span className="italic font-normal text-amber-300 underline decoration-terracota-500/60 decoration-wavy decoration-1 underline-offset-8">
+              hecha con el corazón
+            </span>
+          </h1>
+
+          {/* SUBTÍTULO INSTITUCIONAL */}
+          <p className="mt-5 text-sm sm:text-lg text-crema-200/90 max-w-2xl font-sans leading-relaxed drop-shadow-sm">
+            Amasamos a mano cada madrugada con 100% sémola de trigo candeal y huevos de campo.
+            Elaboración fresca por encargo sin conservantes ni aditivos químicos.
+          </p>
+
+          {/* BADGES RÁPIDOS DE FÁBRICA */}
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-2.5 sm:gap-4 text-xs text-amber-100 font-semibold">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-stone-900/60 border border-stone-700/60 px-3.5 py-1.5 backdrop-blur-sm">
+              🌾 Sémola Pura Candeal
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-stone-900/60 border border-stone-700/60 px-3.5 py-1.5 backdrop-blur-sm">
+              ❄️ 72 hs Heladera / 90d Freezer
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-stone-900/60 border border-stone-700/60 px-3.5 py-1.5 backdrop-blur-sm">
+              ⏱️ 4-5 min Cocción Rápida
+            </span>
+          </div>
+
+          {/* BOTONES DE LLAMADA A LA ACCIÓN (CTA) */}
+          <div className="mt-8 flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+            <button
+              onClick={() => scrollToSection("nuestras-pastas")}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-terracota-600 via-terracota-700 to-[#5A2B1D] text-white px-8 py-4 text-sm sm:text-base font-black tracking-wide shadow-xl hover:shadow-terracota-600/40 hover:scale-105 transition-all border-2 border-amber-400 active:scale-95 cursor-pointer"
+            >
+              <span>VER PRODUCTOS</span>
+              <ArrowRight className="h-5 w-5 text-amber-300" />
+            </button>
+
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 rounded-2xl bg-oliva-700/90 hover:bg-oliva-600 text-white px-7 py-4 text-sm sm:text-base font-bold shadow-md hover:scale-105 transition-all border border-oliva-500/60 active:scale-95 backdrop-blur-sm"
+            >
+              <MessageCircle className="h-5 w-5 fill-current" />
+              <span>Pedir por WhatsApp</span>
+            </a>
+          </div>
+
+          {/* TANDA ACTIVA INFORMATIVA */}
+          <div className="mt-10 rounded-2xl border border-amber-400/30 bg-stone-900/80 backdrop-blur-md px-5 py-3 flex flex-wrap items-center justify-center gap-3 text-xs text-amber-200">
+            <span className="flex h-2.5 w-2.5 relative">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
+            </span>
+            <span className="font-extrabold uppercase tracking-wider text-amber-300">
+              Tanda Fresca Activa:
+            </span>
+            <strong className="text-white font-bold">
+              {config.proxima_tanda_fecha || "Viernes 17 de Octubre"}
+            </strong>
+            <span className="text-amber-500">•</span>
+            <span className="text-stone-300">
+              {config.cierre_pedidos_info || "Pedidos por encargo hasta agotar cupo de amasado"}
+            </span>
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================== */}
+      {/* 2. SECCIÓN "NUESTRAS PASTAS" (GRID CIRCULAR DE CATEGORÍAS) */}
+      {/* ============================================================== */}
+      <section
+        id="nuestras-pastas"
+        className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
+      >
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-oliva-700 bg-oliva-100/90 border border-oliva-300/80 px-3.5 py-1 rounded-full mb-3">
+            <Award className="h-3.5 w-3.5 text-oliva-700" />
+            <span>Fábrica de Autor</span>
+          </div>
+          <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-black text-[#2C1810] tracking-tight">
+            Nuestras Pastas
+          </h2>
+          <p className="mt-3 font-serif italic text-base sm:text-lg text-terracota-800/90 max-w-xl mx-auto">
+            Recetas clásicas, con el amor de siempre.
+          </p>
+          <div className="h-1 w-16 bg-amber-400 mx-auto mt-4 rounded-full" />
+        </div>
+
+        {/* GRILLA DE TARJETAS CIRCULARES (EDITABLES DESDE ADMIN) */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 sm:gap-8 max-w-6xl mx-auto">
+          {categorias.map((cat) => {
+            const isSelected = selectedCategoryId === cat.id;
+            const catImage = getCategoryImageUrl(cat, productos);
+            const countProds = productos.filter((p) => p.categoria_id === cat.id).length;
+
+            return (
+              <button
+                key={cat.id}
+                onClick={() => handleSelectCategory(cat.id)}
+                className="group flex flex-col items-center text-center p-3 sm:p-4 rounded-3xl transition-all hover:bg-white hover:shadow-md cursor-pointer"
+              >
+                {/* CONTENEDOR CIRCULAR DE LA FOTO (ALTA COCINA) */}
+                <div
+                  className={`relative h-28 w-28 sm:h-36 sm:w-36 md:h-40 md:w-40 rounded-full mx-auto overflow-hidden bg-crema-200 shadow-md transition-all duration-300 group-hover:scale-105 ${
+                    isSelected
+                      ? "border-4 border-amber-400 ring-4 ring-amber-300/60 shadow-xl scale-105"
+                      : "border-3 border-[#DFD3BD] group-hover:border-terracota-500"
+                  }`}
+                >
+                  <Image
+                    src={catImage}
+                    alt={cat.nombre}
+                    fill
+                    className="object-cover group-hover:scale-110 transition-transform duration-500"
+                    sizes="(max-width: 640px) 112px, (max-width: 768px) 144px, 160px"
+                  />
+                  {/* Gradiente sutil para contraste */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-stone-900/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+
+                {/* TÍTULO DE LA CATEGORÍA */}
+                <span
+                  className={`font-serif font-black text-sm sm:text-base md:text-lg mt-3.5 leading-snug transition-colors ${
+                    isSelected
+                      ? "text-terracota-700 underline decoration-amber-400 underline-offset-4"
+                      : "text-stone-900 group-hover:text-terracota-800"
+                  }`}
+                >
+                  {cat.nombre}
+                </span>
+
+                {/* VARIEDADES DISPONIBLES */}
+                <span className="text-[11px] font-bold text-stone-700 mt-1 uppercase tracking-wider">
+                  {countProds} {countProds === 1 ? "variedad" : "variedades"}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* BOTÓN PARA RESTABLECER / VER TODAS */}
+        {selectedCategoryId && (
+          <div className="mt-8 text-center animate-fadeIn">
+            <button
+              onClick={() => setSelectedCategoryId(null)}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white border border-[#DFD3BD] hover:border-terracota-400 text-stone-700 hover:text-terracota-900 text-xs font-bold shadow-xs hover:shadow-sm transition-all"
+            >
+              <RotateCcw className="h-3.5 w-3.5 text-terracota-600" />
+              <span>Ver todas las categorías</span>
+            </button>
+          </div>
+        )}
+      </section>
+
+      {/* ============================================================== */}
+      {/* 3. SECCIÓN "PRODUCTOS DESTACADOS" (GRILLA DE TARJETAS VERTICALES) */}
+      {/* ============================================================== */}
+      <section
+        id="productos"
+        className="py-14 sm:py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-[#E8DFC8]"
+      >
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
+          <div>
+            <h3 className="font-serif text-2xl sm:text-3xl md:text-4xl font-black text-[#2C1810]">
+              {currentCategoryName ? currentCategoryName : "Productos Destacados"}
+            </h3>
+            <p className="text-xs sm:text-sm text-stone-700 mt-1">
+              {filteredProducts.length}{" "}
+              {filteredProducts.length === 1 ? "producto disponible" : "productos disponibles"} para
+              encargar en la tanda fresca.
+            </p>
+          </div>
+
+          {/* BARRA DE BÚSQUEDA INSTANTÁNEA */}
+          <div className="relative w-full md:w-80">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-700 pointer-events-none" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Buscar por variedad o ingrediente (ej: salmón, lomo, ricota, espinaca...)"
-              className="w-full pl-11 pr-10 py-3.5 rounded-2xl border border-[#DFD3BD] bg-white text-xs sm:text-sm text-[#2C1810] placeholder:text-stone-400 focus:outline-none focus:border-terracota-600 focus:ring-2 focus:ring-terracota-200 shadow-sm transition-all"
+              placeholder="Buscar por nombre o relleno..."
+              className="w-full pl-10 pr-9 py-2.5 rounded-2xl bg-white border border-[#DFD3BD] focus:border-terracota-500 focus:outline-none focus:ring-2 focus:ring-terracota-200 text-xs sm:text-sm text-stone-900 placeholder:text-stone-700 transition-all shadow-xs"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery("")}
-                className="absolute right-3.5 top-3.5 text-stone-400 hover:text-stone-700 p-1"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-700 hover:text-stone-700 p-0.5"
                 title="Limpiar búsqueda"
               >
                 <X className="h-4 w-4" />
               </button>
             )}
           </div>
+        </div>
 
-          {/* Fila 2: Calculador de Porciones de Fábrica (Fila independiente centrada, Cero Choques) */}
-          <div className="max-w-3xl mx-auto bg-white rounded-2xl border border-[#DFD3BD] p-3 sm:px-5 sm:py-3 shadow-xs">
-            <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3.5">
-              <div className="flex items-center gap-1.5 flex-shrink-0">
-                <span className="text-base">🧮</span>
-                <span className="text-xs sm:text-sm font-bold text-[#2C1810] whitespace-nowrap">
-                  Calculador de Porciones:
-                </span>
-              </div>
+        {/* PÍLDORAS DE FILTRADO RÁPIDO DE CATEGORÍAS (FLEX-WRAP SIN RECORTES) */}
+        <div className="flex flex-wrap items-center justify-start sm:justify-center gap-2 sm:gap-2.5 mb-8">
+          <button
+            onClick={() => setSelectedCategoryId(null)}
+            className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all shadow-xs cursor-pointer ${
+              selectedCategoryId === null
+                ? "bg-terracota-700 text-white border-2 border-amber-300 shadow-sm"
+                : "bg-white text-stone-700 hover:text-terracota-900 border border-[#DFD3BD] hover:border-terracota-400"
+            }`}
+          >
+            Todas las pastas ({productos.length})
+          </button>
 
-              {/* Botones Píldora de Selección con espacio holgado */}
-              <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap justify-center">
-                {[
-                  { label: "Ver Todo", value: null },
-                  { label: "2 porciones", value: 2 },
-                  { label: "4 porciones", value: 4 },
-                  { label: "6 porciones", value: 6 },
-                  { label: "8+ porciones", value: 8 },
-                ].map((pill) => {
-                  const isSelected = comensalesTarget === pill.value;
-                  return (
-                    <button
-                      key={pill.label}
-                      onClick={() => setComensalesTarget(pill.value)}
-                      className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shadow-xs active:scale-95 whitespace-nowrap ${
-                        isSelected
-                          ? "bg-gradient-to-r from-terracota-600 to-terracota-700 text-white shadow-md shadow-terracota-900/20 ring-2 ring-amber-300 ring-offset-1 ring-offset-crema-50"
-                          : "bg-crema-100 text-stone-700 hover:bg-crema-200 border border-crema-300/70"
-                      }`}
-                    >
-                      {pill.label}
-                    </button>
-                  );
-                })}
-              </div>
+          {categorias.map((cat) => {
+            const isCatActive = selectedCategoryId === cat.id;
+            const count = productos.filter((p) => p.categoria_id === cat.id).length;
+
+            return (
+              <button
+                key={cat.id}
+                onClick={() => setSelectedCategoryId(cat.id)}
+                className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all shadow-xs cursor-pointer ${
+                  isCatActive
+                    ? "bg-terracota-700 text-white border-2 border-amber-300 shadow-sm"
+                    : "bg-white text-stone-700 hover:text-terracota-900 border border-[#DFD3BD] hover:border-terracota-400"
+                }`}
+              >
+                {cat.nombre} ({count})
+              </button>
+            );
+          })}
+        </div>
+
+        {/* CALCULADOR DE COMENSALES (MODO ANFITRIÓN) */}
+        <div className="mb-8 rounded-2xl border border-amber-300 bg-amber-50/70 p-4 sm:p-5 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3 text-center sm:text-left">
+            <div className="h-10 w-10 rounded-xl bg-amber-200 border border-amber-400 flex items-center justify-center flex-shrink-0 text-amber-900">
+              <Users className="h-5 w-5" />
+            </div>
+            <div>
+              <span className="font-bold text-xs sm:text-sm text-[#2C1810] block">
+                Calculador de Porciones de Fábrica:
+              </span>
+              <span className="text-[11px] sm:text-xs text-stone-700 block">
+                ¿Para cuántas personas vas a cocinar? Te sugerimos cajas para que rindan exactas.
+              </span>
             </div>
           </div>
 
-          {/* Banner Dorado suave si el Calculador de Fábrica está activo */}
-          {comensalesTarget && (
-            <div className="max-w-3xl mx-auto rounded-2xl border border-amber-300/80 bg-gradient-to-r from-amber-50 via-dorado-100/60 to-amber-50 p-3.5 text-xs text-amber-950 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs animate-fade-in">
-              <div className="flex items-center gap-2.5 text-center sm:text-left">
-                <Sparkles className="h-4 w-4 text-amber-700 fill-current flex-shrink-0" />
-                <span>
-                  <strong>Cálculo de Fábrica activo ({comensalesTarget} porciones):</strong> Te sugerimos cuántas cajas encargar para rendir tus porciones exactas sin desperdicio.
-                </span>
-              </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {[2, 4, 6, 8].map((comensales) => (
+              <button
+                key={comensales}
+                onClick={() =>
+                  setComensalesTarget(comensalesTarget === comensales ? null : comensales)
+                }
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  comensalesTarget === comensales
+                    ? "bg-[#2C1810] text-amber-200 border-2 border-amber-400 shadow-sm"
+                    : "bg-white text-stone-700 border border-amber-200 hover:border-amber-400"
+                }`}
+              >
+                {comensales} personas
+              </button>
+            ))}
+            {comensalesTarget && (
               <button
                 onClick={() => setComensalesTarget(null)}
-                className="text-[11px] font-black text-amber-900 hover:text-terracota-700 underline uppercase tracking-wider flex-shrink-0"
+                className="text-[11px] font-bold text-terracota-700 underline uppercase tracking-wider ml-1"
               >
-                Ver todo el catálogo
+                Limpiar
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
-        {/* ============================================================== */}
-        {/* 3. BARRA DE CAPÍTULOS DEL LIBRO ("PÍLDORAS GOURMET DE ALTA COCINA") */}
-        {/* ============================================================== */}
-        {!searchQuery && (
-          <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3.5 my-4 px-2">
-            {/* Portada & Tradición */}
+        {/* GRILLA DE TARJETAS DE PRODUCTO */}
+        {filteredProducts.length === 0 ? (
+          <div className="text-center py-16 bg-white rounded-3xl border border-[#DFD3BD] p-8 max-w-xl mx-auto">
+            <ShoppingBag className="h-12 w-12 text-stone-700 mx-auto mb-3" />
+            <h4 className="font-serif text-xl font-bold text-stone-800">
+              No se encontraron productos
+            </h4>
+            <p className="text-xs sm:text-sm text-stone-700 mt-1">
+              Probá borrando el texto de búsqueda o seleccionando otra categoría.
+            </p>
             <button
-              onClick={() => handleSelectPage(0)}
-              className={`px-5 py-3 rounded-2xl text-xs sm:text-sm font-bold transition-all shadow-sm flex items-center gap-2 active:scale-95 ${
-                activePageIndex === 0
-                  ? "bg-[#2C1810] text-amber-200 border-2 border-amber-400 shadow-md ring-2 ring-amber-300/40"
-                  : "bg-white text-stone-700 hover:text-terracota-900 border border-[#DFD3BD] hover:border-terracota-400 hover:shadow-md hover:scale-105"
-              }`}
+              onClick={() => {
+                setSearchQuery("");
+                setSelectedCategoryId(null);
+                setComensalesTarget(null);
+              }}
+              className="mt-4 px-5 py-2.5 rounded-xl bg-terracota-700 text-white text-xs font-bold hover:bg-terracota-800 transition-colors"
             >
-              <BookOpen className="h-4 w-4 flex-shrink-0 text-amber-400" />
-              <span>Portada & Tradición</span>
+              Ver todo el catálogo
             </button>
-
-            {/* Capítulos de Categorías */}
-            {categorias.map((cat, idx) => {
-              const pageNum = idx + 1;
-              const isActive = activePageIndex === pageNum;
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredProducts.map((prod) => {
+              const isAdded = addedId === prod.id;
+              const rinde = prod.rinde_porciones || 2;
+              const coccion = prod.tiempo_coccion_minutos || 4;
 
               return (
-                <button
-                  key={cat.id}
-                  onClick={() => handleSelectPage(pageNum)}
-                  className={`px-5 py-3 rounded-2xl text-xs sm:text-sm font-bold transition-all shadow-sm flex items-center gap-2 active:scale-95 ${
-                    isActive
-                      ? "bg-gradient-to-r from-terracota-700 via-terracota-800 to-[#5A2B1D] text-white border-2 border-amber-300 shadow-md ring-2 ring-amber-300/40"
-                      : "bg-white text-stone-700 hover:text-terracota-900 border border-[#DFD3BD] hover:border-terracota-400 hover:shadow-md hover:scale-105"
-                  }`}
+                <div
+                  key={prod.id}
+                  className="rounded-3xl bg-white border border-[#E8DFC8] shadow-sm hover:shadow-xl hover:border-terracota-400 transition-all duration-300 overflow-hidden flex flex-col justify-between group"
                 >
-                  <span className={`text-[10px] font-black uppercase tracking-wider ${isActive ? "text-amber-300/90" : "text-terracota-700"}`}>
-                    Cap. {toRoman(pageNum)}
-                  </span>
-                  <span>{cat.nombre}</span>
-                </button>
+                  {/* IMAGEN VERTICAL DEL PRODUCTO (EDITABLE DESDE ADMIN) */}
+                  <div className="relative h-56 sm:h-60 w-full overflow-hidden bg-stone-100 flex-shrink-0">
+                    <Image
+                      src={
+                        prod.imagen_url ||
+                        "https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=800&q=80"
+                      }
+                      alt={prod.nombre}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                    />
+
+                    {/* BADGE DE CATEGORÍA */}
+                    <span className="absolute top-3 left-3 rounded-full bg-[#2C1810]/90 text-amber-200 border border-amber-400/50 px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider backdrop-blur-xs">
+                      {prod.categoria_nombre}
+                    </span>
+
+                    {/* BADGE DE PORCIONES */}
+                    <span className="absolute top-3 right-3 rounded-full bg-white/95 text-stone-800 border border-stone-200 px-2.5 py-1 text-[10px] font-bold shadow-xs flex items-center gap-1 backdrop-blur-xs">
+                      <Users className="h-3 w-3 text-terracota-600" />
+                      <span>Rinde {rinde} porc.</span>
+                    </span>
+                  </div>
+
+                  {/* CUERPO DE LA TARJETA */}
+                  <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between">
+                    <div>
+                      <h4 className="font-serif text-lg font-black text-stone-900 group-hover:text-terracota-800 transition-colors leading-snug">
+                        {prod.nombre}
+                      </h4>
+
+                      {/* INGREDIENTES / DESCRIPCIÓN */}
+                      <p className="text-xs text-stone-700 line-clamp-2 mt-1.5 leading-relaxed">
+                        {prod.ingredientes ||
+                          "Elaborado con 100% sémola candeal pura y huevos de granja."}
+                      </p>
+
+                      {/* INDICADORES DE FÁBRICA */}
+                      <div className="mt-3 pt-3 border-t border-stone-100 flex items-center justify-between text-[11px] text-stone-700 font-medium">
+                        <span className="inline-flex items-center gap-1">
+                          <Clock className="h-3.5 w-3.5 text-amber-600" />
+                          <span>{coccion} min cocción</span>
+                        </span>
+                        <span className="inline-flex items-center gap-1">
+                          <Snowflake className="h-3.5 w-3.5 text-blue-500" />
+                          <span>72h / 90d</span>
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* PRECIO Y BOTÓN DE COMPRA DIRECTO */}
+                    <div className="mt-4 pt-3 border-t border-stone-100 flex items-center justify-between gap-3">
+                      <div>
+                        <span className="text-[10px] uppercase tracking-wider text-stone-700 block font-bold">
+                          Precio de fábrica
+                        </span>
+                        <div className="flex items-baseline gap-1">
+                          <span className="font-serif text-xl sm:text-2xl font-black text-terracota-900">
+                            $ {prod.precio.toLocaleString("es-AR")}
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-stone-700 block">
+                          / {prod.unidad_medida || "porción"}
+                        </span>
+                      </div>
+
+                      {/* BOTÓN "AGREGAR" CON RESPUESTA VISUAL INMEDIATA */}
+                      <button
+                        onClick={() => handleAddToCart(prod)}
+                        className={`px-4 sm:px-5 py-2.5 rounded-2xl font-bold text-xs sm:text-sm flex items-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer ${
+                          isAdded
+                            ? "bg-emerald-600 text-white ring-2 ring-emerald-300 scale-105"
+                            : "bg-terracota-700 hover:bg-terracota-800 text-white hover:shadow-md"
+                        }`}
+                      >
+                        {isAdded ? (
+                          <>
+                            <Check className="h-4 w-4" />
+                            <span>¡Listo!</span>
+                          </>
+                        ) : (
+                          <>
+                            <ShoppingBag className="h-4 w-4" />
+                            <span>Agregar</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </div>
               );
             })}
           </div>
         )}
-
-        {/* ============================================================== */}
-        {/* 4. ENCUADERNACIÓN EDITORIAL CON PERSPECTIVA 3D */}
-        {/* ============================================================== */}
-        <div className="perspective-book">
-          <div
-            className={`book-cover-shell book-spine-shadow p-5 sm:p-8 lg:p-11 min-h-[580px] transition-all duration-300 overflow-visible ${
-              flipDirection === "next" ? "animate-page-next" : "animate-page-prev"
-            }`}
-          >
-            {/* ------------------------------------------------------------ */}
-            {/* A. VISTA DE BÚSQUEDA INSTANTÁNEA */}
-            {/* ------------------------------------------------------------ */}
-            {searchQuery ? (
-              <div className="space-y-6">
-                <div className="flex items-center justify-between pb-4 border-b border-[#DFD3BD]">
-                  <div>
-                    <h3 className="font-serif text-2xl font-black text-[#2C1810]">
-                      Resultados del Amasado
-                    </h3>
-                    <p className="text-xs text-stone-600 mt-1">
-                      Se encontraron {searchResults.length} variedades artesanales para &ldquo;{searchQuery}&rdquo;
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setSearchQuery("")}
-                    className="text-xs font-bold text-terracota-700 hover:underline"
-                  >
-                    Volver a hojear el libro →
-                  </button>
-                </div>
-
-                {searchResults.length === 0 ? (
-                  <div className="text-center py-16 bg-white/70 rounded-3xl p-8 border border-dashed border-[#DFD3BD]">
-                    <Utensils className="h-12 w-12 text-stone-300 mx-auto mb-3" />
-                    <p className="font-serif text-lg text-stone-700 font-bold">
-                      No encontramos ninguna variedad con &ldquo;{searchQuery}&rdquo;.
-                    </p>
-                    <p className="text-xs text-stone-500 mt-1 max-w-sm mx-auto">
-                      Prueba con palabras clave como &ldquo;ravioles&rdquo;, &ldquo;sorrentinos&rdquo;, &ldquo;ricota&rdquo;, &ldquo;lomo&rdquo; o &ldquo;espinaca&rdquo;.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {searchResults.map((producto) => (
-                      <ProductCard
-                        key={producto.id}
-                        producto={producto}
-                        addedId={addedId}
-                        comensalesTarget={comensalesTarget}
-                        isSauce={isSauce(producto)}
-                        onAddToCart={handleAddToCart}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-            ) : (
-              <>
-                {/* -------------------------------------------------------- */}
-                {/* B. VISTA 0: PORTADA DEL GRAN LIBRO (HISTORIA Y MANIFIESTO) */}
-                {/* -------------------------------------------------------- */}
-                {activePageIndex === 0 && (
-                  <div className="space-y-10 py-2 max-w-5xl mx-auto">
-                    {/* PLIEGO CENTRAL DE BIENVENIDA */}
-                    <div className="relative rounded-3xl bg-gradient-to-br from-[#2C1810] via-[#3E2116] to-[#1F100B] text-white p-7 sm:p-12 shadow-2xl overflow-hidden border border-amber-500/30">
-                      {/* Halos dorados */}
-                      <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 rounded-full bg-amber-400/15 blur-3xl pointer-events-none" />
-                      <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-oliva-500/15 blur-3xl pointer-events-none" />
-
-                      <div className="relative z-10 space-y-5 text-center sm:text-left">
-                        <div className="inline-flex items-center gap-2 rounded-full bg-amber-400/20 text-amber-200 border border-amber-400/40 px-3.5 py-1 text-xs font-black uppercase tracking-wider">
-                          <Sparkles className="h-3.5 w-3.5 text-amber-400 fill-current" />
-                          <span>Edición Artesanal · Fábrica a la Vista</span>
-                        </div>
-
-                        <h2 className="font-serif text-3xl sm:text-5xl font-black text-amber-50 leading-tight">
-                          {config.nombre_tienda || "Mia Pasta Bella"}
-                        </h2>
-
-                        <p className="text-base sm:text-xl text-amber-100/90 font-serif italic max-w-2xl leading-relaxed">
-                          &ldquo;{config.slogan_principal || "Pastas artesanales de autor con tradición y pasión."}&rdquo;
-                        </p>
-
-                        <p className="text-xs sm:text-sm text-stone-300 max-w-2xl leading-relaxed pt-1">
-                          Cada variedad se elabora artesanalmente en pequeños lotes con sémola pura de trigo candeal seleccionada, huevos de campo y masa madre de fermentación lenta. Sin conservantes, químicos ni procesos industriales.
-                        </p>
-
-                        {/* 3 Pilares de Fábrica */}
-                        <div className="pt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 border-t border-amber-500/20">
-                          <div className="flex items-center gap-3 bg-white/5 p-3.5 rounded-2xl border border-white/10 backdrop-blur-xs">
-                            <Snowflake className="h-6 w-6 text-blue-300 flex-shrink-0" />
-                            <div className="text-left">
-                              <strong className="text-xs font-bold block text-white">Apto Freezer</strong>
-                              <span className="text-[11px] text-amber-200/80">90 días de conservación</span>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-3 bg-white/5 p-3.5 rounded-2xl border border-white/10 backdrop-blur-xs">
-                            <Clock className="h-6 w-6 text-amber-400 flex-shrink-0" />
-                            <div className="text-left">
-                              <strong className="text-xs font-bold block text-white">Frescura al Día</strong>
-                              <span className="text-[11px] text-amber-200/80">72 hs en heladera</span>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-3 bg-white/5 p-3.5 rounded-2xl border border-white/10 backdrop-blur-xs">
-                            <Layers className="h-6 w-6 text-emerald-400 flex-shrink-0" />
-                            <div className="text-left">
-                              <strong className="text-xs font-bold block text-white">Porciones Reales</strong>
-                              <span className="text-[11px] text-amber-200/80">Platos generosos de autor</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* ÍNDICE VISUAL DE CAPÍTULOS */}
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between border-b border-[#DFD3BD] pb-2">
-                        <h3 className="font-serif text-xl sm:text-2xl font-black text-[#2C1810] flex items-center gap-2">
-                          <BookOpen className="h-5 w-5 text-terracota-700" />
-                          Índice de Capítulos Artesanales ({categorias.length} Variedades)
-                        </h3>
-                        <span className="text-xs text-oliva-900 font-bold hidden sm:inline">
-                          Usa las flechas del teclado o toca para abrir
-                        </span>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        {categorias.map((cat, idx) => {
-                          const pageNum = idx + 1;
-                          const count = productos.filter((p) => p.categoria_id === cat.id).length;
-
-                          return (
-                            <div
-                              key={cat.id}
-                              role="button"
-                              tabIndex={0}
-                              onClick={() => handleSelectPage(pageNum)}
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter" || e.key === " ") {
-                                  handleSelectPage(pageNum);
-                                }
-                              }}
-                              className="group cursor-pointer rounded-3xl bg-white border border-[#DFD3BD] p-6 hover:border-terracota-600 hover:shadow-xl transition-all duration-300 flex flex-col justify-between gap-4"
-                            >
-                              <div className="space-y-2">
-                                <div className="flex items-center justify-between">
-                                  <span className="text-[10px] font-black uppercase tracking-wider text-terracota-800 bg-terracota-50 px-2.5 py-1 rounded-full border border-terracota-200">
-                                    Capítulo {toRoman(pageNum)}
-                                  </span>
-                                  <span className="inline-flex items-center justify-center h-7 w-7 rounded-full bg-crema-100 group-hover:bg-terracota-600 group-hover:text-white transition-colors">
-                                    <ChevronRight className="h-4 w-4 text-terracota-700 group-hover:text-white group-hover:translate-x-0.5 transition-transform" />
-                                  </span>
-                                </div>
-
-                                <h4 className="font-serif text-lg font-bold text-[#2C1810] group-hover:text-terracota-700 transition-colors pt-1">
-                                  {cat.nombre}
-                                </h4>
-                                <p className="text-xs text-stone-600 line-clamp-2 leading-relaxed">
-                                  {cat.descripcion}
-                                </p>
-                              </div>
-
-                              <div className="pt-3 border-t border-crema-200 flex items-center justify-between text-xs font-bold text-stone-500 group-hover:text-terracota-950">
-                                <span>{count} variedades listas</span>
-                                <span className="text-terracota-700 font-extrabold group-hover:underline">
-                                  Abrir capítulo →
-                                </span>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {/* BOTÓN PRINCIPAL DE APERTURA */}
-                    <div className="text-center pt-4">
-                      <button
-                        onClick={goToNextPage}
-                        className="btn-boutique py-4 px-10 text-sm sm:text-base gap-3 text-white shadow-xl group"
-                      >
-                        <span>Abrir Primer Capítulo: {categorias[0]?.nombre || "Variedades"}</span>
-                        <ChevronRight className="h-5 w-5 group-hover:translate-x-1.5 transition-transform" />
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {/* -------------------------------------------------------- */}
-                {/* C. VISTAS 1..N: HOJAS DE CATEGORÍA CON PRODUCTOS */}
-                {/* -------------------------------------------------------- */}
-                {activePageIndex > 0 && currentCategory && (
-                  <div className="space-y-8">
-                    {/* ENCABEZADO DE CAPÍTULO CON BOTONES DE PASO DE PÁGINA */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-[#DFD3BD] gap-4">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-black uppercase tracking-wider text-terracota-800 bg-terracota-100/90 border border-terracota-300 px-3 py-1 rounded-full shadow-xs">
-                            Capítulo {toRoman(activePageIndex)} · {currentCategory.nombre}
-                          </span>
-                        </div>
-
-                        <h2 className="font-serif text-3xl sm:text-4xl font-black text-[#2C1810] mt-2.5 leading-tight">
-                          {currentCategory.nombre}
-                        </h2>
-                        <p className="text-xs sm:text-sm text-stone-600 mt-1 max-w-2xl leading-relaxed">
-                          {currentCategory.descripcion}
-                        </p>
-                      </div>
-
-                      {/* Botones de Navegación de Página Refinados */}
-                      <div className="flex items-center gap-2.5 self-end sm:self-center">
-                        <button
-                          onClick={goToPrevPage}
-                          className="inline-flex items-center justify-center gap-1.5 rounded-full border border-stone-300 bg-white px-4 sm:px-5 py-2.5 text-xs sm:text-sm font-bold text-[#2C1810] hover:bg-stone-50 transition-all shadow-xs active:scale-95"
-                        >
-                          <ChevronLeft className="h-4 w-4 text-terracota-700 flex-shrink-0" />
-                          <span>Anterior</span>
-                        </button>
-
-                        <button
-                          onClick={goToNextPage}
-                          disabled={activePageIndex >= totalPages - 1}
-                          className="inline-flex items-center justify-center gap-1.5 rounded-full bg-oliva-700 px-4 sm:px-5 py-2.5 text-xs sm:text-sm font-bold text-white hover:bg-oliva-800 transition-all shadow-xs disabled:opacity-30 disabled:cursor-not-allowed active:scale-95"
-                        >
-                          <span>Siguiente</span>
-                          <ChevronRight className="h-4 w-4 flex-shrink-0" />
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* GRILLA DE PRODUCTOS */}
-                    {categoryProducts.length === 0 ? (
-                      <div className="text-center py-16 bg-white/70 rounded-3xl p-8 border border-dashed border-[#DFD3BD]">
-                        <p className="font-serif text-lg text-stone-700 font-bold">
-                          No hay variedades cargadas en este capítulo actualmente.
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {categoryProducts.map((producto) => (
-                          <ProductCard
-                            key={producto.id}
-                            producto={producto}
-                            addedId={addedId}
-                            comensalesTarget={comensalesTarget}
-                            isSauce={isSauce(producto)}
-                            onAddToCart={handleAddToCart}
-                          />
-                        ))}
-                      </div>
-                    )}
-
-                    {/* PIE DE HOJA: NAVEGACIÓN Y CONTADOR EDITORIAL */}
-                    <div className="mt-12 pt-6 border-t border-[#DFD3BD] flex flex-col sm:flex-row items-center justify-between text-xs sm:text-sm text-stone-700 font-semibold gap-4">
-                      <span className="text-stone-600">
-                        Capítulo {toRoman(activePageIndex)} de {toRoman(totalPages - 1)} ·{" "}
-                        <strong className="text-[#2C1810]">{currentCategory.nombre}</strong>
-                      </span>
-
-                      <div className="flex items-center gap-3">
-                        <button
-                          onClick={goToPrevPage}
-                          className="inline-flex items-center justify-center gap-1.5 rounded-full border border-stone-300 bg-white px-5 py-2.5 text-xs font-bold text-[#2C1810] hover:bg-stone-50 transition-all shadow-xs"
-                        >
-                          <ChevronLeft className="h-4 w-4 text-terracota-700" />
-                          <span>Página Anterior</span>
-                        </button>
-                        {activePageIndex < totalPages - 1 && (
-                          <button
-                            onClick={goToNextPage}
-                            className="inline-flex items-center justify-center gap-1.5 rounded-full bg-oliva-700 px-5 py-2.5 text-xs font-bold text-white hover:bg-oliva-800 transition-all shadow-xs"
-                          >
-                            <span>Siguiente Capítulo</span>
-                            <ChevronRight className="h-4 w-4" />
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        </div>
-      </div>
+      </section>
 
       {/* ============================================================== */}
-      {/* 5. STICKY GOURMET BAR: BARRA FLOTANTE INFERIOR DE CANASTA */}
+      {/* 4. BANDA DE VALORES ARTESANALES (4 PILARES INSTITUCIONALES) */}
       {/* ============================================================== */}
-      {items.length > 0 && (
-        <div className="fixed bottom-4 inset-x-4 max-w-xl mx-auto z-40 animate-bounce-subtle">
-          <div className="rounded-2xl bg-[#1F120B]/95 backdrop-blur-md border border-amber-500/40 p-3.5 sm:p-4 text-white shadow-2xl flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="h-10 w-10 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-400/40 flex items-center justify-center flex-shrink-0">
-                <ShoppingBag className="h-5 w-5" />
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-extrabold text-white truncate">
-                    {items.length} {items.length === 1 ? "variedad" : "variedades"}
-                  </span>
-                  <span className="text-[10px] bg-amber-400/20 text-amber-300 px-2 py-0.5 rounded-full font-bold">
-                    {totalPorciones} porciones
-                  </span>
+      <section className="bg-gradient-to-b from-[#FAF6EE] to-[#F4ECE0] py-16 px-4 sm:px-6 lg:px-8 border-t border-b border-[#E8DFC8]">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-10">
+            <span className="text-[11px] font-bold uppercase tracking-widest text-terracota-700 block mb-2">
+              El Manifiesto de Fábrica
+            </span>
+            <h3 className="font-serif text-2xl sm:text-3xl md:text-4xl font-black text-[#2C1810]">
+              La Calidad de lo Auténtico
+            </h3>
+            <div className="h-1 w-12 bg-amber-400 mx-auto mt-3 rounded-full" />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+            {/* PILAR 1 */}
+            <div className="rounded-3xl bg-white/90 border border-[#DFD3BD] p-6 shadow-xs hover:shadow-md transition-shadow text-center sm:text-left flex flex-col justify-between">
+              <div>
+                <div className="h-12 w-12 rounded-2xl bg-oliva-100 border border-oliva-300 text-oliva-800 flex items-center justify-center mb-4 mx-auto sm:mx-0">
+                  <Leaf className="h-6 w-6 text-oliva-700" />
                 </div>
-                <div className="font-serif text-base sm:text-lg font-black text-amber-200">
-                  ${totalPrice.toLocaleString("es-AR")}
-                </div>
+                <h4 className="font-serif text-lg font-bold text-terracota-950 mb-2">
+                  1. Ingredientes seleccionados
+                </h4>
+                <p className="text-xs text-stone-700 leading-relaxed">
+                  100% sémola de trigo candeal pura, huevos de granja frescos y verduras naturales de
+                  estación sin químicos ni aditivos.
+                </p>
               </div>
             </div>
 
-            <button
-              onClick={() => setIsCartOpen(true)}
-              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-black uppercase tracking-wider text-amber-950 transition-all shadow-lg active:scale-95 flex-shrink-0"
-              style={{
-                background: "linear-gradient(135deg, #F9E298 0%, #D4AF37 50%, #B8860B 100%)",
-              }}
-            >
-              <span>Ver Canasta</span>
-              <ArrowRight className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ===========================================================================
-// SUB-COMPONENTE: TARJETA DE PRODUCTO "GOURMET HERO" (FULL-BLEED Y BLINDADA)
-// ===========================================================================
-
-interface ProductCardProps {
-  producto: ProductoItem;
-  addedId: string | null;
-  comensalesTarget: number | null;
-  isSauce: boolean;
-  onAddToCart: (producto: ProductoItem, cantidad: number) => void;
-}
-
-function ProductCard({
-  producto,
-  addedId,
-  comensalesTarget,
-  isSauce,
-  onAddToCart,
-}: ProductCardProps) {
-  const wasJustAdded = addedId === producto.id;
-  const isOutOfStock = producto.stock !== undefined && producto.stock <= 0;
-  const isLowStock = producto.stock !== undefined && producto.stock > 0 && producto.stock <= 5;
-
-  const rindePorciones = producto.rinde_porciones || 2;
-
-  // Cálculo sugerido para el pedido de fábrica
-  const unidadesSugeridas = useMemo(() => {
-    if (!comensalesTarget || isSauce) return 1;
-    return Math.max(1, Math.ceil(comensalesTarget / rindePorciones));
-  }, [comensalesTarget, rindePorciones, isSauce]);
-
-  const totalPorcionesSugeridas = unidadesSugeridas * rindePorciones;
-
-  return (
-    <div className="rounded-3xl bg-white border border-[#E6D8C3] shadow-sm hover:shadow-2xl transition-all duration-500 flex flex-col justify-between overflow-hidden group">
-      {/* 1. IMAGEN FULL-BLEED SUPERIOR (DE BORDE A BORDE) */}
-      <div className="relative h-56 sm:h-60 w-full overflow-hidden bg-stone-900 flex-shrink-0">
-        {producto.imagen_url ? (
-          <Image
-            src={producto.imagen_url}
-            alt={producto.nombre}
-            fill
-            className="object-cover group-hover:scale-110 transition-transform duration-700"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          />
-        ) : (
-          <div className="h-full w-full bg-gradient-to-br from-stone-800 to-amber-950 flex flex-col items-center justify-center p-4 text-center">
-            <Utensils className="h-10 w-10 text-amber-200/50 mb-2" />
-            <span className="text-xs font-bold text-amber-100">
-              {producto.categoria_nombre}
-            </span>
-          </div>
-        )}
-
-        {/* Degradado cinematográfico para legibilidad de badges */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-black/35 pointer-events-none" />
-
-        {/* BADGES SUPERIORES (GLASSMORPHISM) */}
-        <div className="absolute top-3 inset-x-3 flex items-center justify-between gap-2 pointer-events-none">
-          {/* Categoría / Estado Stock */}
-          {isOutOfStock ? (
-            <span className="rounded-full bg-red-600/90 text-white backdrop-blur-md px-3 py-1 text-[10px] font-black uppercase tracking-wider shadow-sm">
-              Agotado
-            </span>
-          ) : isLowStock ? (
-            <span className="rounded-full bg-amber-500/90 text-amber-950 backdrop-blur-md px-3 py-1 text-[10px] font-black uppercase tracking-wider shadow-sm animate-pulse">
-              ¡Últimas {producto.stock}!
-            </span>
-          ) : (
-            <span className="rounded-full bg-oliva-800/85 text-white backdrop-blur-md px-3 py-1 text-[10px] font-bold uppercase tracking-wider border border-white/15 shadow-sm">
-              {producto.categoria_nombre}
-            </span>
-          )}
-
-          {/* Unidad de Medida en Glassmorphism */}
-          <span className="rounded-full bg-black/50 text-amber-100 backdrop-blur-md px-3 py-1 text-[10px] font-black uppercase tracking-wider border border-white/20 shadow-sm">
-            {producto.unidad_medida}
-          </span>
-        </div>
-
-        {/* BADGES INFERIORES SOBRE LA FOTO: COCCIÓN Y PORCIONES DE FÁBRICA */}
-        <div className="absolute bottom-3 inset-x-3 flex items-center justify-between text-white text-[11px] font-bold pointer-events-none">
-          <div className="flex items-center gap-1.5 rounded-full bg-black/45 backdrop-blur-md px-2.5 py-1 border border-white/15">
-            <Clock className="h-3.5 w-3.5 text-amber-300" />
-            <span>{producto.tiempo_coccion_minutos} min</span>
-          </div>
-
-          <div className="flex items-center gap-1.5 rounded-full bg-black/45 backdrop-blur-md px-2.5 py-1 border border-white/15">
-            <Users className="h-3.5 w-3.5 text-amber-300" />
-            <span>Rinde {rindePorciones} {rindePorciones === 1 ? "porción" : "porciones"}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* 2. CUERPO DE LA TARJETA (TÍTULO, INGREDIENTES Y RECOMENDACIÓN DE FÁBRICA) */}
-      <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between space-y-4">
-        <div className="space-y-2.5">
-          <h3 className="font-serif text-xl font-bold text-[#2C1810] group-hover:text-terracota-700 transition-colors leading-snug">
-            {producto.nombre}
-          </h3>
-
-          {/* Bloque de ingredientes tipo nota de cata */}
-          <div className="border-l-2 border-terracota-500 pl-3 italic text-stone-600 text-xs sm:text-sm line-clamp-3 leading-relaxed">
-            {producto.ingredientes}
-          </div>
-
-          {/* Chip de Porciones si está activo el calculador */}
-          {comensalesTarget && !isSauce && (
-            <div className="mt-3 rounded-xl bg-amber-50 border border-amber-300/70 p-2.5 text-xs text-amber-950 flex items-center gap-2">
-              <span className="text-base flex-shrink-0">🧮</span>
-              <span>
-                Para tus <strong>{comensalesTarget} porciones</strong>: encargá <strong>{unidadesSugeridas} {producto.unidad_medida.toLowerCase().includes("caja") ? "cajas" : "unidades"}</strong> (rinde {totalPorcionesSugeridas} porciones).
-              </span>
-            </div>
-          )}
-        </div>
-
-        {/* 3. PIE DE COMPRA BLINDADO (CERO RECORTES) */}
-        <div className="pt-4 border-t border-[#F0E6D2] space-y-3">
-          {/* Fila Superior: Precio y Conservación Corta de Fábrica */}
-          <div className="flex items-baseline justify-between gap-2">
-            <div>
-              <span className="text-[10px] uppercase font-black text-stone-400 block tracking-wider">
-                Precio Fábrica
-              </span>
-              <span className="font-serif text-2xl font-black text-[#2C1810]">
-                ${producto.precio.toLocaleString("es-AR")}
-              </span>
+            {/* PILAR 2 */}
+            <div className="rounded-3xl bg-white/90 border border-[#DFD3BD] p-6 shadow-xs hover:shadow-md transition-shadow text-center sm:text-left flex flex-col justify-between">
+              <div>
+                <div className="h-12 w-12 rounded-2xl bg-amber-100 border border-amber-300 text-amber-800 flex items-center justify-center mb-4 mx-auto sm:mx-0">
+                  <Home className="h-6 w-6 text-amber-700" />
+                </div>
+                <h4 className="font-serif text-lg font-bold text-terracota-950 mb-2">
+                  2. Elaboración artesanal
+                </h4>
+                <p className="text-xs text-stone-700 leading-relaxed">
+                  Amasado diario a la vista en lotes limitados, respetando el descanso de la masa, el
+                  corte manual y el armado prolijo.
+                </p>
+              </div>
             </div>
 
-            <div className="text-right text-[11px] font-semibold text-stone-600">
-              <span className="block text-terracota-800 font-bold">🌿 Fresco: 72 hs en heladera</span>
-              <span className="text-[10px] text-stone-500">❄️ Freezer: 90 días</span>
+            {/* PILAR 3 */}
+            <div className="rounded-3xl bg-white/90 border border-[#DFD3BD] p-6 shadow-xs hover:shadow-md transition-shadow text-center sm:text-left flex flex-col justify-between">
+              <div>
+                <div className="h-12 w-12 rounded-2xl bg-terracota-100 border border-terracota-300 text-terracota-800 flex items-center justify-center mb-4 mx-auto sm:mx-0">
+                  <Heart className="h-6 w-6 text-terracota-700 fill-terracota-700/20" />
+                </div>
+                <h4 className="font-serif text-lg font-bold text-terracota-950 mb-2">
+                  3. Sabor casero en cada bocado
+                </h4>
+                <p className="text-xs text-stone-700 leading-relaxed">
+                  Recetas familiares de herencia italiana pensadas para revivir el clásico almuerzo
+                  de domingo alrededor de la mesa.
+                </p>
+              </div>
+            </div>
+
+            {/* PILAR 4 */}
+            <div className="rounded-3xl bg-white/90 border border-[#DFD3BD] p-6 shadow-xs hover:shadow-md transition-shadow text-center sm:text-left flex flex-col justify-between">
+              <div>
+                <div className="h-12 w-12 rounded-2xl bg-stone-100 border border-stone-300 text-stone-800 flex items-center justify-center mb-4 mx-auto sm:mx-0">
+                  <Truck className="h-6 w-6 text-stone-700" />
+                </div>
+                <h4 className="font-serif text-lg font-bold text-terracota-950 mb-2">
+                  4. Envíos y retiro en fábrica
+                </h4>
+                <p className="text-xs text-stone-700 leading-relaxed">
+                  Cadena de frío garantizada para conservar la pasta fresca o congelada, con retiros
+                  programados en tandas activas.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================== */}
+      {/* 5. SECCIÓN "NOSOTROS / HISTORIA DE LA FÁBRICA" */}
+      {/* ============================================================== */}
+      <section id="nosotros" className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <div className="rounded-3xl bg-white border border-[#DFD3BD] p-6 sm:p-10 lg:p-12 shadow-sm flex flex-col lg:flex-row items-center gap-10">
+          {/* FOTO HISTORIA / AMASADO */}
+          <div className="relative h-72 sm:h-96 w-full lg:w-1/2 rounded-2xl overflow-hidden shadow-md flex-shrink-0">
+            <Image
+              src="https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=1000&q=80"
+              alt="Historia de Mía Pasta Bella"
+              fill
+              className="object-cover"
+              sizes="(max-width: 1024px) 100vw, 50vw"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-stone-900/60 to-transparent" />
+            <div className="absolute bottom-4 left-4 right-4 text-white">
+              <span className="text-[11px] font-extrabold uppercase tracking-wider text-amber-300 block">
+                Fábrica de Pastas por Encargo
+              </span>
+              <p className="font-serif text-base sm:text-lg font-bold">
+                Mía Pasta Bella · El sabor de sentirse en casa
+              </p>
             </div>
           </div>
 
-          {/* Botón de Compra de Ancho Completo */}
-          <button
-            onClick={() => onAddToCart(producto, unidadesSugeridas)}
-            disabled={isOutOfStock}
-            className={`w-full py-3.5 px-5 rounded-2xl font-bold text-xs sm:text-sm transition-all shadow-md active:scale-[0.98] flex items-center justify-center gap-2 ${
-              isOutOfStock
-                ? "bg-stone-200 text-stone-400 cursor-not-allowed border border-stone-300"
-                : wasJustAdded
-                ? "bg-oliva-700 text-white shadow-oliva-900/20"
-                : "bg-gradient-to-r from-terracota-600 via-terracota-700 to-terracota-800 hover:from-terracota-700 hover:to-terracota-900 text-white shadow-terracota-900/25 border border-white/20"
-            }`}
-          >
-            {isOutOfStock ? (
-              <span>Variedad Agotada para esta Tanda</span>
-            ) : wasJustAdded ? (
-              <>
-                <Check className="h-4 w-4" />
-                <span>¡Agregado a la Canasta!</span>
-              </>
-            ) : comensalesTarget && !isSauce && unidadesSugeridas > 1 ? (
-              <>
-                <Plus className="h-4 w-4" />
-                <span>Sumar {unidadesSugeridas} u. ({comensalesTarget} pers.)</span>
-              </>
-            ) : (
-              <>
-                <Plus className="h-4 w-4" />
-                <span>Agregar a mi Canasta</span>
-              </>
-            )}
-          </button>
+          {/* TEXTO DE HISTORIA Y TRADICIÓN */}
+          <div className="w-full lg:w-1/2 space-y-4">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300 px-3 py-1 text-xs font-bold uppercase tracking-wider">
+              Nuestra Historia
+            </span>
+            <h3 className="font-serif text-2xl sm:text-3xl md:text-4xl font-black text-[#2C1810] leading-tight">
+              Una pasión artesanal que nace en el calor del hogar
+            </h3>
+            <p className="text-xs sm:text-sm text-stone-700 leading-relaxed">
+              Mía Pasta Bella nació con una convicción clara: devolverle a la mesa familiar el sabor
+              genuino de la pasta fresca que hacían las abuelas. En nuestra fábrica de autor no
+              usamos polvos industriales, conservantes ni colorantes.
+            </p>
+            <p className="text-xs sm:text-sm text-stone-700 leading-relaxed">
+              Cada cinta de tallarín, cada plancha de ravioles y cada medallón de sorrentino se
+              elabora con sémola pura de trigo candeal seleccionada y huevos de granja. Cuidamos la
+              cadena de frío y los tiempos de descanso para que al hervirlas sientas esa textura al
+              dente inconfundible.
+            </p>
+
+            <div className="pt-2 flex flex-wrap items-center gap-4">
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-oliva-700 hover:bg-oliva-800 text-white font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95"
+              >
+                <MessageCircle className="h-4 w-4 fill-current" />
+                <span>Conversar con el Maestro Pastero</span>
+              </a>
+
+              {onOpenSplash && (
+                <button
+                  onClick={onOpenSplash}
+                  className="inline-flex items-center gap-1.5 px-4 py-3 rounded-2xl bg-white border border-[#DFD3BD] hover:border-terracota-400 text-stone-700 text-xs font-bold transition-all shadow-xs"
+                >
+                  <RotateCcw className="h-3.5 w-3.5 text-terracota-600" />
+                  <span>Ver Presentación</span>
+                </button>
+              )}
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 }

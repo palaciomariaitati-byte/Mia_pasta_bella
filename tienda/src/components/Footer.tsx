@@ -1,6 +1,20 @@
-import React from "react";
+"use client";
+
+import React, { useState } from "react";
 import Image from "next/image";
-import { MessageCircle, MapPin, Heart, ExternalLink, Mail, Phone } from "lucide-react";
+import {
+  MessageCircle,
+  MapPin,
+  Heart,
+  Mail,
+  Phone,
+  Clock,
+  ShieldCheck,
+  HelpCircle,
+  FileText,
+  X,
+  Sparkles,
+} from "lucide-react";
 import { TiendaConfig } from "@/lib/db";
 
 function FacebookIcon({ className }: { className?: string }) {
@@ -32,49 +46,61 @@ interface FooterProps {
 }
 
 export function Footer({ config }: FooterProps) {
+  const [activeModal, setActiveModal] = useState<"faq" | "terms" | "contact" | null>(null);
+
   const telefonoLimpio = config.whatsapp_numero.replace(/[^0-9]/g, "");
   const whatsappUrl = `https://wa.me/${telefonoLimpio}?text=${encodeURIComponent(
     config.whatsapp_mensaje
   )}`;
 
   return (
-    <footer className="border-t border-crema-300 bg-crema-200/90 text-terracota-900 pt-16 pb-12 transition-colors">
+    <footer className="border-t border-oliva-800 bg-[#212A1B] text-crema-100 pt-16 pb-12 transition-colors relative">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
-          {/* BLOQUE 1: IDENTIDAD Y SLOGAN EDITABLE */}
+          {/* BLOQUE 1: IDENTIDAD CORPORATIVA + BANDERA ITALIANA */}
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <div
-                className="relative h-12 w-12 overflow-hidden rounded-full border-2 border-terracota-400 bg-crema-100 shadow-sm flex-shrink-0"
-                style={{ width: "48px", height: "48px", minWidth: "48px", minHeight: "48px", maxWidth: "48px", maxHeight: "48px" }}
+                className="relative h-14 w-14 overflow-hidden rounded-full border-2 border-amber-400 bg-white p-0.5 shadow-md flex-shrink-0"
+                style={{ width: "56px", height: "56px", minWidth: "56px", minHeight: "56px" }}
               >
                 <Image
                   src="/images/logo.jpg"
                   alt={config.nombre_tienda}
                   fill
                   className="object-cover rounded-full"
-                  sizes="48px"
+                  sizes="56px"
                 />
               </div>
               <div>
-                <span className="font-serif text-xl font-bold text-terracota-900 block">
-                  {config.nombre_tienda}
-                </span>
-                <span className="text-[10px] uppercase tracking-wider text-oliva-700 font-semibold block">
-                  Pastas Frescas & Pre-Pizzas
+                <div className="flex items-center gap-2">
+                  <span className="font-serif text-2xl font-black text-amber-200 block">
+                    {config.nombre_tienda}
+                  </span>
+                  {/* BANDERA TRICOLOR ITALIANA */}
+                  <span
+                    className="inline-flex h-3 w-5 overflow-hidden rounded-[2px] shadow-xs border border-amber-500/40"
+                    title="Tradición Italiana"
+                  >
+                    <span className="w-1/3 bg-[#009246]" />
+                    <span className="w-1/3 bg-white" />
+                    <span className="w-1/3 bg-[#CE2B37]" />
+                  </span>
+                </div>
+                <span className="text-[11px] uppercase tracking-wider text-amber-400/90 font-bold block">
+                  El sabor de sentirse en casa
                 </span>
               </div>
             </div>
 
-            {/* TEXTO EXACTO DINÁMICO REQUERIDO 1 */}
-            <p className="text-xs sm:text-sm text-terracota-800/90 leading-relaxed font-serif italic">
-              {config.slogan_principal}
+            <p className="text-xs sm:text-sm text-crema-200/80 leading-relaxed font-serif italic">
+              &ldquo;{config.slogan_principal || "Pastas artesanales con masa madre viva y sémola candeal."}&rdquo;
             </p>
 
-            {/* REDES DINÁMICAS */}
+            {/* REDES SOCIALES OFICIALES */}
             <div className="pt-2">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-terracota-700 mb-2.5">
-                Canales de Contacto Directo
+              <p className="text-[11px] font-bold uppercase tracking-wider text-amber-300/80 mb-2.5">
+                Seguinos en Nuestras Redes
               </p>
               <div className="flex items-center gap-3">
                 <a
@@ -82,7 +108,7 @@ export function Footer({ config }: FooterProps) {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Facebook"
-                  className="rounded-full bg-crema-100 p-2.5 text-terracota-700 border border-crema-400 hover:bg-terracota-600 hover:text-white transition-all shadow-sm"
+                  className="rounded-full bg-oliva-900/80 p-2.5 text-amber-200 border border-oliva-700 hover:bg-amber-400 hover:text-stone-950 transition-all shadow-sm"
                 >
                   <FacebookIcon className="h-4 w-4" />
                 </a>
@@ -92,7 +118,7 @@ export function Footer({ config }: FooterProps) {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Instagram"
-                  className="rounded-full bg-crema-100 p-2.5 text-terracota-700 border border-crema-400 hover:bg-terracota-600 hover:text-white transition-all shadow-sm"
+                  className="rounded-full bg-oliva-900/80 p-2.5 text-amber-200 border border-oliva-700 hover:bg-amber-400 hover:text-stone-950 transition-all shadow-sm"
                 >
                   <InstagramIcon className="h-4 w-4" />
                 </a>
@@ -102,7 +128,7 @@ export function Footer({ config }: FooterProps) {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="WhatsApp"
-                  className="rounded-full bg-oliva-500 p-2.5 text-white hover:bg-oliva-600 transition-all shadow-sm"
+                  className="rounded-full bg-emerald-600 p-2.5 text-white hover:bg-emerald-500 transition-all shadow-sm"
                 >
                   <MessageCircle className="h-4 w-4 fill-current" />
                 </a>
@@ -112,7 +138,7 @@ export function Footer({ config }: FooterProps) {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Google Maps"
-                  className="rounded-full bg-crema-100 p-2.5 text-terracota-700 border border-crema-400 hover:bg-terracota-600 hover:text-white transition-all shadow-sm"
+                  className="rounded-full bg-oliva-900/80 p-2.5 text-amber-200 border border-oliva-700 hover:bg-amber-400 hover:text-stone-950 transition-all shadow-sm"
                   title="Ver ubicación en Google Maps"
                 >
                   <MapPin className="h-4 w-4" />
@@ -121,78 +147,226 @@ export function Footer({ config }: FooterProps) {
             </div>
           </div>
 
-          {/* BLOQUE 2: NUESTRAS VARIEDADES (TEXTO DINÁMICO EDITABLE 2) */}
+          {/* BLOQUE 2: NUESTRAS VARIEDADES */}
           <div>
-            <h3 className="font-serif text-base font-bold text-terracota-900 mb-3 border-b border-crema-300 pb-1.5">
-              Nuestras Variedades
+            <h3 className="font-serif text-base font-bold text-amber-300 mb-3 border-b border-oliva-800 pb-1.5 flex items-center gap-2">
+              <span>Nuestras Variedades</span>
             </h3>
-            <p className="text-xs sm:text-sm text-terracota-800/90 leading-relaxed">
-              {config.variedades_texto}
+            <p className="text-xs sm:text-sm text-crema-200/85 leading-relaxed">
+              {config.variedades_texto ||
+                "Tallarines y fideos saborizados, sorrentinos de autor, ravioles en plancha, ñoquis soufflé, tortellinis, pre-pizzas y empanadas criollas."}
             </p>
           </div>
 
-          {/* BLOQUE 3: ATENCIÓN AL CLIENTE (TEXTO DINÁMICO EDITABLE 3) */}
+          {/* BLOQUE 3: ATENCIÓN Y CONTACTO */}
           <div>
-            <h3 className="font-serif text-base font-bold text-terracota-900 mb-3 border-b border-crema-300 pb-1.5">
-              Atención al Cliente
+            <h3 className="font-serif text-base font-bold text-amber-300 mb-3 border-b border-oliva-800 pb-1.5 flex items-center gap-2">
+              <span>Fábrica & Horarios</span>
             </h3>
-            <p className="text-xs sm:text-sm text-terracota-800/90 leading-relaxed">
-              {config.atencion_cliente}
+            <p className="text-xs sm:text-sm text-crema-200/85 leading-relaxed mb-3">
+              {config.atencion_cliente ||
+                "Av. de los Sabores 450 · Martes a Domingos de 10:00 a 20:30 hs."}
             </p>
+            <div className="flex items-center gap-2 text-xs text-amber-200">
+              <Clock className="h-4 w-4 text-amber-400 flex-shrink-0" />
+              <span>Pedidos por encargo para tandas frescas</span>
+            </div>
           </div>
 
-          {/* BLOQUE 4: COMPROMISO DE CALIDAD (TEXTO DINÁMICO EDITABLE 4) */}
-          <div className="rounded-2xl border border-crema-300 bg-crema-100 p-5 shadow-sm">
-            <span className="inline-block rounded-full bg-oliva-100 text-oliva-800 px-3 py-0.5 text-[10px] font-bold uppercase tracking-wider mb-2">
-              Sello Artesanal
+          {/* BLOQUE 4: SELLO DE CALIDAD */}
+          <div className="rounded-2xl border border-oliva-700 bg-oliva-900/60 p-5 shadow-sm">
+            <span className="inline-block rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30 px-3 py-0.5 text-[10px] font-bold uppercase tracking-wider mb-2">
+              🌾 Compromiso Artesanal
             </span>
-            <p className="text-xs text-terracota-800/90 leading-relaxed mb-3">
-              {config.compromiso_calidad}
+            <p className="text-xs text-crema-200/80 leading-relaxed mb-4">
+              {config.compromiso_calidad ||
+                "Masa 100% sémola pura candeal y huevos de campo. 72 hs en heladera / 90 días en freezer."}
             </p>
             <a
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="btn-oliva w-full text-xs py-2 flex items-center justify-center gap-1.5 font-bold"
+              className="w-full text-xs py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 flex items-center justify-center gap-2 font-black transition-all shadow-sm active:scale-95"
             >
-              <MessageCircle className="h-3.5 w-3.5 fill-current" />
-              Pedir por WhatsApp
+              <MessageCircle className="h-4 w-4 fill-current" />
+              Consultar por WhatsApp
             </a>
           </div>
         </div>
 
-        {/* COPYRIGHT & FIRMA OFICIAL NEXORAONE REQUERIDA */}
-        <div className="mt-12 border-t border-crema-300 pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-terracota-700 gap-4">
+        {/* ENLACES INSTITUCIONALES INFERIORES */}
+        <div className="mt-12 border-t border-oliva-800/80 pt-6 flex flex-wrap items-center justify-center gap-6 text-xs text-crema-300/80 font-medium">
+          <button
+            onClick={() => setActiveModal("faq")}
+            className="hover:text-amber-300 transition-colors flex items-center gap-1.5 cursor-pointer"
+          >
+            <HelpCircle className="h-3.5 w-3.5 text-amber-400" />
+            <span>Preguntas frecuentes</span>
+          </button>
+          <span>•</span>
+          <button
+            onClick={() => setActiveModal("terms")}
+            className="hover:text-amber-300 transition-colors flex items-center gap-1.5 cursor-pointer"
+          >
+            <FileText className="h-3.5 w-3.5 text-amber-400" />
+            <span>Términos y condiciones</span>
+          </button>
+          <span>•</span>
+          <button
+            onClick={() => setActiveModal("contact")}
+            className="hover:text-amber-300 transition-colors flex items-center gap-1.5 cursor-pointer"
+          >
+            <Phone className="h-3.5 w-3.5 text-amber-400" />
+            <span>Contacto</span>
+          </button>
+        </div>
+
+        {/* COPYRIGHT & FIRMA OFICIAL NEXORAONE */}
+        <div className="mt-6 border-t border-oliva-800/50 pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-crema-400/70 gap-4">
           <p>
-            © {new Date().getFullYear()} {config.nombre_tienda}. Todos los derechos reservados.
+            © {new Date().getFullYear()} {config.nombre_tienda || "Mia Pasta Bella"}. Todos los derechos reservados.
           </p>
 
           {/* FIRMA OFICIAL: "Desarrollado por NexoraOne" */}
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3 bg-crema-100 border border-crema-300 px-4 py-2 rounded-full shadow-sm text-terracota-800">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 bg-oliva-900/80 border border-oliva-700/80 px-4 py-2 rounded-full shadow-xs text-crema-200">
             <span className="font-medium text-xs">
-              Desarrollado por <strong className="font-bold text-terracota-900">NexoraOne</strong>
+              Desarrollado por <strong className="font-bold text-amber-300">NexoraOne</strong>
             </span>
-            <span className="text-terracota-400">•</span>
+            <span className="text-oliva-500">•</span>
             <a
               href="tel:3786414533"
-              className="flex items-center gap-1 text-xs text-terracota-700 hover:text-terracota-900 font-semibold transition-colors"
+              className="flex items-center gap-1 text-xs text-crema-300 hover:text-amber-300 font-semibold transition-colors"
               title="Llamar o WhatsApp"
             >
-              <Phone className="h-3 w-3 text-oliva-600" />
+              <Phone className="h-3 w-3 text-amber-400" />
               3786414533
             </a>
-            <span className="text-terracota-400">•</span>
+            <span className="text-oliva-500">•</span>
             <a
               href="mailto:myjnexoravisual@gmail.com"
-              className="flex items-center gap-1 text-xs text-terracota-700 hover:text-terracota-900 font-semibold transition-colors"
+              className="flex items-center gap-1 text-xs text-crema-300 hover:text-amber-300 font-semibold transition-colors"
               title="Enviar correo"
             >
-              <Mail className="h-3 w-3 text-terracota-600" />
+              <Mail className="h-3 w-3 text-amber-400" />
               myjnexoravisual@gmail.com
             </a>
           </div>
         </div>
       </div>
+
+      {/* ============================================================== */}
+      {/* MODALES INTERACTIVOS: FAQ / TÉRMINOS / CONTACTO */}
+      {/* ============================================================== */}
+      {activeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fadeIn">
+          <div className="relative w-full max-w-xl max-h-[85vh] overflow-y-auto rounded-3xl bg-[#FAF6EE] text-[#2C1810] p-6 sm:p-8 shadow-2xl border-2 border-amber-400">
+            <button
+              onClick={() => setActiveModal(null)}
+              className="absolute top-5 right-5 p-2 rounded-full bg-stone-200 text-stone-800 hover:bg-stone-300 transition-colors"
+              aria-label="Cerrar modal"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            {/* CONTENIDO SEGÚN MODAL */}
+            {activeModal === "faq" && (
+              <div>
+                <div className="flex items-center gap-2 mb-4">
+                  <HelpCircle className="h-6 w-6 text-terracota-700" />
+                  <h3 className="font-serif text-2xl font-black text-terracota-900">
+                    Preguntas Frecuentes
+                  </h3>
+                </div>
+                <div className="space-y-4 text-xs sm:text-sm text-stone-700 leading-relaxed">
+                  <div className="rounded-2xl bg-white p-4 border border-[#DFD3BD]">
+                    <h4 className="font-bold text-terracota-900 mb-1">
+                      ¿Cuánto tiempo duran las pastas frescas?
+                    </h4>
+                    <p>
+                      Al no tener conservantes químicos, duran <strong>72 horas en heladera</strong> (entre 2°C y 5°C) o hasta <strong>90 días en freezer</strong> (-18°C) guardadas en su caja o envase sellado.
+                    </p>
+                  </div>
+                  <div className="rounded-2xl bg-white p-4 border border-[#DFD3BD]">
+                    <h4 className="font-bold text-terracota-900 mb-1">
+                      ¿Cómo cocino las pastas congeladas?
+                    </h4>
+                    <p>
+                      <strong>¡Nunca las descongeles previamente!</strong> Tiralas directamente en abundante agua hirviendo con sal. Los tallarines tardan de 3 a 5 minutos, y los ravioles o sorrentinos de 6 a 8 minutos.
+                    </p>
+                  </div>
+                  <div className="rounded-2xl bg-white p-4 border border-[#DFD3BD]">
+                    <h4 className="font-bold text-terracota-900 mb-1">
+                      ¿Cómo coordino mi pedido y pago?
+                    </h4>
+                    <p>
+                      Armás tu canasta en la app, ingresás tu nombre y teléfono, y al confirmar elegís transferencia bancaria con el CBU/Alias o coordinás directo por WhatsApp con nuestro equipo.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeModal === "terms" && (
+              <div>
+                <div className="flex items-center gap-2 mb-4">
+                  <FileText className="h-6 w-6 text-terracota-700" />
+                  <h3 className="font-serif text-2xl font-black text-terracota-900">
+                    Términos y Condiciones
+                  </h3>
+                </div>
+                <div className="space-y-3 text-xs sm:text-sm text-stone-700 leading-relaxed">
+                  <p>
+                    <strong>1. Producción por Encargo:</strong> Mía Pasta Bella es una fábrica artesanal que elabora bajo pedido para asegurar frescura absoluta en cada lote.
+                  </p>
+                  <p>
+                    <strong>2. Horarios y Retiro:</strong> Los pedidos confirmados se retiran en fábrica en los días y horarios acordados de la tanda activa, o mediante envío coordinado respetando la cadena de frío.
+                  </p>
+                  <p>
+                    <strong>3. Métodos de Pago:</strong> Aceptamos transferencias bancarias directas, Mercado Pago y efectivo contra entrega en fábrica.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {activeModal === "contact" && (
+              <div>
+                <div className="flex items-center gap-2 mb-4">
+                  <Phone className="h-6 w-6 text-terracota-700" />
+                  <h3 className="font-serif text-2xl font-black text-terracota-900">
+                    Canales de Contacto Directo
+                  </h3>
+                </div>
+                <div className="space-y-3 text-xs sm:text-sm text-stone-700 leading-relaxed">
+                  <p>
+                    <strong>Fábrica & Ventas:</strong> {config.atencion_cliente || "Av. de los Sabores 450"}
+                  </p>
+                  <p>
+                    <strong>WhatsApp Directo:</strong>{" "}
+                    <a href={whatsappUrl} className="text-emerald-700 font-bold underline" target="_blank" rel="noopener noreferrer">
+                      {config.whatsapp_numero}
+                    </a>
+                  </p>
+                  <p>
+                    <strong>Ubicación:</strong>{" "}
+                    <a href={config.google_maps_url} className="text-terracota-700 font-bold underline" target="_blank" rel="noopener noreferrer">
+                      Ver en Google Maps
+                    </a>
+                  </p>
+                </div>
+              </div>
+            )}
+
+            <div className="mt-6 text-center">
+              <button
+                onClick={() => setActiveModal(null)}
+                className="px-6 py-2.5 rounded-xl bg-terracota-700 text-white font-bold hover:bg-terracota-800 transition-colors"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </footer>
   );
 }
