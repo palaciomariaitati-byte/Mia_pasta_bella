@@ -178,18 +178,15 @@ export function BookCatalog({
           <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
             {/* IDENTIDAD: LOGO + TÍTULOS */}
             <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
-              {/* Contenedor del Logo con dimensiones estrictas e inalterables */}
-              <div
-                className="relative rounded-full border-2 border-amber-400 bg-white p-1 shadow-[0_0_20px_rgba(212,175,55,0.3)] flex-shrink-0 transition-transform duration-500 hover:scale-105 overflow-hidden flex items-center justify-center"
-                style={{ width: "80px", height: "80px", minWidth: "80px", minHeight: "80px", maxWidth: "80px", maxHeight: "80px" }}
-              >
-                <div className="relative w-full h-full rounded-full overflow-hidden">
+              {/* Contenedor del Logo con dimensiones fijas estrictas */}
+              <div className="relative h-16 w-16 sm:h-20 sm:w-20 rounded-full border-2 border-amber-400 bg-white p-1 shadow-[0_0_20px_rgba(212,175,55,0.3)] flex-shrink-0 overflow-hidden">
+                <div className="relative h-full w-full rounded-full overflow-hidden">
                   <Image
                     src="/images/logo.jpg"
                     alt="Mia Pasta Bella"
                     fill
                     className="object-cover rounded-full"
-                    sizes="80px"
+                    sizes="(max-width: 640px) 64px, 80px"
                     priority
                   />
                 </div>
@@ -344,47 +341,45 @@ export function BookCatalog({
         </div>
 
         {/* ============================================================== */}
-        {/* 3. BARRA DE CAPÍTULOS DEL LIBRO (SIN RECORTES VERTICALES) */}
+        {/* 3. BARRA DE CAPÍTULOS DEL LIBRO ("PÍLDORAS GOURMET DE ALTA COCINA") */}
         {/* ============================================================== */}
         {!searchQuery && (
-          <div className="mb-6 relative overflow-visible">
-            <div className="chapter-tabs-scroll flex items-center gap-2.5 overflow-x-auto overflow-y-visible py-3.5 px-2 no-scrollbar justify-start lg:justify-center">
-              {/* Portada & Historia */}
-              <button
-                onClick={() => handleSelectPage(0)}
-                className={`flex-shrink-0 flex items-center gap-2 px-5 py-3 rounded-2xl text-xs sm:text-sm font-bold transition-all shadow-sm active:scale-95 leading-normal ${
-                  activePageIndex === 0
-                    ? "bg-[#2C1810] text-amber-200 border-2 border-amber-400 shadow-md ring-2 ring-amber-300/50"
-                    : "bg-white text-stone-700 hover:bg-[#F5EFE0] border border-[#DFD3BD]"
-                }`}
-              >
-                <BookOpen className="h-4 w-4 flex-shrink-0 text-amber-400" />
-                <span>Portada & Tradición</span>
-              </button>
+          <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3.5 my-4 px-2">
+            {/* Portada & Tradición */}
+            <button
+              onClick={() => handleSelectPage(0)}
+              className={`px-5 py-3 rounded-2xl text-xs sm:text-sm font-bold transition-all shadow-sm flex items-center gap-2 active:scale-95 ${
+                activePageIndex === 0
+                  ? "bg-[#2C1810] text-amber-200 border-2 border-amber-400 shadow-md ring-2 ring-amber-300/40"
+                  : "bg-white text-stone-700 hover:text-terracota-900 border border-[#DFD3BD] hover:border-terracota-400 hover:shadow-md hover:scale-105"
+              }`}
+            >
+              <BookOpen className="h-4 w-4 flex-shrink-0 text-amber-400" />
+              <span>Portada & Tradición</span>
+            </button>
 
-              {/* Capítulos de Categorías */}
-              {categorias.map((cat, idx) => {
-                const pageNum = idx + 1;
-                const isActive = activePageIndex === pageNum;
+            {/* Capítulos de Categorías */}
+            {categorias.map((cat, idx) => {
+              const pageNum = idx + 1;
+              const isActive = activePageIndex === pageNum;
 
-                return (
-                  <button
-                    key={cat.id}
-                    onClick={() => handleSelectPage(pageNum)}
-                    className={`flex-shrink-0 flex items-center gap-2 px-5 py-3 rounded-2xl text-xs sm:text-sm font-bold transition-all shadow-sm active:scale-95 leading-normal ${
-                      isActive
-                        ? "bg-gradient-to-r from-terracota-600 to-terracota-700 text-white border-2 border-amber-300 shadow-md ring-2 ring-amber-300/50"
-                        : "bg-white text-stone-700 hover:bg-[#F5EFE0] border border-[#DFD3BD]"
-                    }`}
-                  >
-                    <span className="text-[10px] font-black uppercase text-amber-300/80">
-                      Cap. {toRoman(pageNum)}
-                    </span>
-                    <span>{cat.nombre}</span>
-                  </button>
-                );
-              })}
-            </div>
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => handleSelectPage(pageNum)}
+                  className={`px-5 py-3 rounded-2xl text-xs sm:text-sm font-bold transition-all shadow-sm flex items-center gap-2 active:scale-95 ${
+                    isActive
+                      ? "bg-gradient-to-r from-terracota-700 via-terracota-800 to-[#5A2B1D] text-white border-2 border-amber-300 shadow-md ring-2 ring-amber-300/40"
+                      : "bg-white text-stone-700 hover:text-terracota-900 border border-[#DFD3BD] hover:border-terracota-400 hover:shadow-md hover:scale-105"
+                  }`}
+                >
+                  <span className={`text-[10px] font-black uppercase tracking-wider ${isActive ? "text-amber-300/90" : "text-terracota-700"}`}>
+                    Cap. {toRoman(pageNum)}
+                  </span>
+                  <span>{cat.nombre}</span>
+                </button>
+              );
+            })}
           </div>
         )}
 
