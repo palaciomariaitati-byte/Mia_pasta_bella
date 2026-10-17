@@ -178,14 +178,18 @@ export function BookCatalog({
           <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
             {/* IDENTIDAD: LOGO + TÍTULOS */}
             <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
-              <div className="relative h-18 w-18 sm:h-22 sm:w-22 rounded-full border-2 border-amber-400 bg-white p-1 shadow-[0_0_20px_rgba(212,175,55,0.3)] flex-shrink-0 transition-transform duration-500 hover:scale-105">
-                <div className="relative h-full w-full rounded-full overflow-hidden">
+              {/* Contenedor del Logo con dimensiones estrictas e inalterables */}
+              <div
+                className="relative rounded-full border-2 border-amber-400 bg-white p-1 shadow-[0_0_20px_rgba(212,175,55,0.3)] flex-shrink-0 transition-transform duration-500 hover:scale-105 overflow-hidden flex items-center justify-center"
+                style={{ width: "80px", height: "80px", minWidth: "80px", minHeight: "80px", maxWidth: "80px", maxHeight: "80px" }}
+              >
+                <div className="relative w-full h-full rounded-full overflow-hidden">
                   <Image
                     src="/images/logo.jpg"
                     alt="Mia Pasta Bella"
                     fill
-                    className="object-cover"
-                    sizes="88px"
+                    className="object-cover rounded-full"
+                    sizes="80px"
                     priority
                   />
                 </div>

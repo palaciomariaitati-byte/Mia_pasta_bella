@@ -217,14 +217,17 @@ export function IntroSplash({ config, onEnter }: IntroSplashProps) {
         </div>
 
         {/* LOGO DE REVELADO CON ILUSTRACIÓN DE LAS DOS NIÑAS: ESCALA IMPONENTE */}
-        <div className="relative z-10 mx-auto h-36 w-36 sm:h-44 sm:w-44 md:h-52 md:w-52 mb-6 sm:mb-7 rounded-full overflow-hidden border-4 border-amber-400/90 p-1.5 bg-gradient-to-b from-amber-400/40 to-amber-950/90 shadow-[0_0_45px_rgba(212,175,55,0.45)] transition-transform duration-700 hover:scale-105">
-          <div className="relative h-full w-full rounded-full overflow-hidden">
+        <div
+          className="relative z-10 mx-auto mb-6 sm:mb-7 rounded-full overflow-hidden border-4 border-amber-400/90 p-1.5 bg-gradient-to-b from-amber-400/40 to-amber-950/90 shadow-[0_0_45px_rgba(212,175,55,0.45)] transition-transform duration-700 hover:scale-105 flex-shrink-0 flex items-center justify-center"
+          style={{ width: "160px", height: "160px", minWidth: "160px", minHeight: "160px", maxWidth: "160px", maxHeight: "160px" }}
+        >
+          <div className="relative w-full h-full rounded-full overflow-hidden">
             <Image
               src="/images/logo.jpg"
               alt="Mia Pasta Bella"
               fill
-              className="object-cover"
-              sizes="(max-width: 640px) 150px, (max-width: 768px) 180px, 210px"
+              className="object-cover rounded-full"
+              sizes="160px"
               priority
             />
           </div>

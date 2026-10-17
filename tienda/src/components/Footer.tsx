@@ -44,12 +44,15 @@ export function Footer({ config }: FooterProps) {
           {/* BLOQUE 1: IDENTIDAD Y SLOGAN EDITABLE */}
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <div className="relative h-12 w-12 overflow-hidden rounded-full border-2 border-terracota-400 bg-crema-100 shadow-sm">
+              <div
+                className="relative h-12 w-12 overflow-hidden rounded-full border-2 border-terracota-400 bg-crema-100 shadow-sm flex-shrink-0"
+                style={{ width: "48px", height: "48px", minWidth: "48px", minHeight: "48px", maxWidth: "48px", maxHeight: "48px" }}
+              >
                 <Image
                   src="/images/logo.jpg"
                   alt={config.nombre_tienda}
                   fill
-                  className="object-cover"
+                  className="object-cover rounded-full"
                   sizes="48px"
                 />
               </div>

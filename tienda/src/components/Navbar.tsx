@@ -25,12 +25,15 @@ export function Navbar({ config, onOpenQR }: NavbarProps) {
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
         {/* LOGO BOUTIQUE */}
         <div className="flex items-center gap-3">
-          <div className="relative h-12 w-12 overflow-hidden rounded-full border-2 border-terracota-400 bg-crema-200 shadow-sm">
+          <div
+            className="relative h-12 w-12 overflow-hidden rounded-full border-2 border-terracota-400 bg-crema-200 shadow-sm flex-shrink-0"
+            style={{ width: "48px", height: "48px", minWidth: "48px", minHeight: "48px", maxWidth: "48px", maxHeight: "48px" }}
+          >
             <Image
               src="/images/logo.jpg"
               alt={config.nombre_tienda}
               fill
-              className="object-cover"
+              className="object-cover rounded-full"
               sizes="48px"
               priority
             />
