@@ -218,18 +218,18 @@ export function CartDrawer({ config, productos = [] }: CartDrawerProps) {
                 ))}
 
                 {/* ============================================================== */}
-                {/* MARIDAJE DEL CHEF: UPSELLING EN 1 CLIC (SUGERENCIA DE SALSA) */}
+                {/* COMPLEMENTO DE FÁBRICA: UPSELLING EN 1 CLIC (SALSA ARTESANAL) */}
                 {/* ============================================================== */}
                 {suggestedSauces.length > 0 && (
                   <div className="rounded-2xl border-2 border-amber-300/80 bg-gradient-to-br from-amber-50 to-crema-100 p-4 shadow-sm space-y-3 mt-4">
                     <div className="flex items-center gap-2">
-                      <ChefHat className="h-4 w-4 text-amber-700 flex-shrink-0" />
+                      <span className="text-base flex-shrink-0">🍅</span>
                       <div>
                         <h4 className="font-serif text-xs font-bold text-amber-950 uppercase tracking-wider">
-                          🍅 Maridaje del Chef
+                          Complemento de Fábrica: ¿Sumamos Salsa Artesanal al pedido?
                         </h4>
                         <p className="text-[11px] text-amber-900/80">
-                          ¿Sumamos una salsa artesanal fresca para completar el plato?
+                          Salsas caseras recién elaboradas, sin conservantes, listas para acompañar tu pasta.
                         </p>
                       </div>
                     </div>
@@ -297,30 +297,35 @@ export function CartDrawer({ config, productos = [] }: CartDrawerProps) {
           {/* FOOTER DEL DRAWER CON TOTAL Y CHECKOUT */}
           {items.length > 0 && (
             <div className="border-t border-[#E6D8C3] bg-white p-5 sm:p-6 space-y-4 shadow-lg">
-              {/* Rendimiento total de comensales para la mesa */}
-              <div className="flex justify-between items-center text-xs text-stone-600 bg-amber-50/80 p-2.5 rounded-xl border border-amber-200/60">
-                <span className="font-semibold text-amber-950 flex items-center gap-1.5">
-                  <Utensils className="h-3.5 w-3.5 text-amber-700" />
-                  Rendimiento estimado:
+              {/* Rendimiento total de porciones de fábrica */}
+              <div className="flex justify-between items-center text-xs text-stone-600 bg-amber-50/90 p-3 rounded-2xl border border-amber-200/80">
+                <span className="font-bold text-amber-950 flex items-center gap-1.5">
+                  <span className="text-sm">🌾</span>
+                  Total Porciones que rinde tu pedido:
                 </span>
-                <span className="font-bold text-amber-900 bg-amber-200/70 px-2.5 py-0.5 rounded-full text-xs">
-                  {totalPorciones} platos a servir
+                <span className="font-black text-amber-950 bg-amber-200 px-3 py-1 rounded-full text-xs shadow-xs">
+                  {totalPorciones} porciones
                 </span>
               </div>
 
               {/* Total de la Orden */}
-              <div className="flex justify-between items-baseline">
+              <div className="flex justify-between items-baseline pt-1">
                 <div>
-                  <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block">
-                    Total a Abonar
+                  <span className="text-[10px] font-black text-stone-400 uppercase tracking-wider block">
+                    Precio Total de la Compra
                   </span>
                   <span className="font-serif text-3xl font-black text-[#2C1810]">
                     ${totalPrice.toLocaleString("es-AR")}
                   </span>
                 </div>
-                <span className="text-[11px] text-stone-500 font-medium">
-                  {items.length} variedades
-                </span>
+                <div className="text-right">
+                  <span className="text-xs text-stone-600 font-bold block">
+                    {items.length} {items.length === 1 ? "variedad" : "variedades"}
+                  </span>
+                  <span className="text-[10px] text-terracota-700 font-bold">
+                    Elaboración a pedido
+                  </span>
+                </div>
               </div>
 
               {/* Botón Principal de Checkout */}
@@ -331,7 +336,7 @@ export function CartDrawer({ config, productos = [] }: CartDrawerProps) {
                   background: "linear-gradient(135deg, #8C4F37 0%, #703D2A 100%)",
                 }}
               >
-                <span>Confirmar Pedido y Datos de Entrega</span>
+                <span>Encargar Pedido a Fábrica</span>
                 <ArrowRight className="h-4 w-4" />
               </button>
 

@@ -19,7 +19,9 @@ import {
   ExternalLink,
   QrCode,
   ShieldCheck,
-  Utensils,
+  Phone,
+  Layers,
+  ArrowRight,
 } from "lucide-react";
 import { useCart } from "@/context/cart-context";
 import { TiendaConfig } from "@/lib/db";
@@ -39,7 +41,7 @@ export function CheckoutModal({ isOpen, onClose, config }: CheckoutModalProps) {
   const [telefono, setTelefono] = useState("");
   const [direccion, setDireccion] = useState("");
   const [diaEntrega, setDiaEntrega] = useState<string>("");
-  const [metodoPago, setMetodoPago] = useState<"efectivo" | "transferencia" | "mercado_pago">("mercado_pago");
+  const [metodoPago, setMetodoPago] = useState<"transferencia" | "efectivo">("transferencia");
   const [notas, setNotas] = useState("");
   const [loading, setLoading] = useState(false);
   const [copiedAlias, setCopiedAlias] = useState(false);
@@ -51,6 +53,8 @@ export function CheckoutModal({ isOpen, onClose, config }: CheckoutModalProps) {
     monto: number;
     porciones: number;
     diaElegido: string;
+    modalidad: string;
+    metodo: string;
   } | null>(null);
 
   const qrCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -67,7 +71,7 @@ export function CheckoutModal({ isOpen, onClose, config }: CheckoutModalProps) {
     }
   }, [config.dias_elaboracion, diaEntrega]);
 
-  // Renderizar QR de pago al confirmar pedido
+  // Renderizar QR de transferencia bancaria al confirmar pedido
   useEffect(() => {
     if (!pedidoConfirmado || !qrCanvasRef.current) return;
 
@@ -84,7 +88,7 @@ export function CheckoutModal({ isOpen, onClose, config }: CheckoutModalProps) {
       includeLogo: true,
       logoSrc: "/images/logo.jpg",
       logoSizePercent: 22,
-    }).catch((err) => console.error("Error al renderizar QR de cobro:", err));
+    }).catch((err) => console.error("Error al renderizar QR de transferencia:", err));
   }, [pedidoConfirmado, config.link_pago_mercado_pago, config.mercado_pago_alias]);
 
   if (!isOpen) return null;
@@ -101,7 +105,7 @@ export function CheckoutModal({ isOpen, onClose, config }: CheckoutModalProps) {
         tipo_entrega: tipoEntrega,
         dia_entrega: diaEntrega,
         total_porciones: totalPorciones,
-        metodo_pago: metodoPago,
+        metodo_pago: metodoPago === "transferencia" ? "transferencia" : "efectivo",
         notas,
         items: items.map((it) => ({
           producto_id: it.id,
@@ -120,35 +124,39 @@ export function CheckoutModal({ isOpen, onClose, config }: CheckoutModalProps) {
 
       const data = await res.json();
       const numPedido = data.numero_pedido || `PED-${Date.now().toString().slice(-4)}`;
+      const montoFinal = data.total_verificado || totalPrice;
+      const porcionesFinal = data.porciones_verificadas || totalPorciones;
 
-      // Armar mensaje estructurado de WhatsApp para la fábrica
-      let msg = `🍝 *NUEVO ENCARGO ${numPedido} — MIA PASTA BELLA*\n`;
+      // Mensaje estructurado de comanda para la fábrica
+      let msg = `🍝 *NUEVO ENCARGO A FÁBRICA #${numPedido} — MIA PASTA BELLA*\n`;
       msg += `👤 *Cliente:* ${nombre}\n`;
       msg += `📞 *Teléfono:* ${telefono}\n`;
-      msg += `📅 *Tanda de Elaboración:* ${diaEntrega}\n`;
-      msg += `🚀 *Modalidad:* ${tipoEntrega === "delivery" ? `🏠 Delivery a ${direccion}` : "🏪 Retiro en Fábrica"}\n`;
-      msg += `💳 *Método de Pago:* ${metodoPago.toUpperCase()}\n`;
-      msg += `👥 *Total Porciones:* ${totalPorciones} porciones\n`;
-      if (notas.trim()) msg += `📝 *Notas:* ${notas.trim()}\n`;
-      msg += `\n*Detalle de Variedades Frescas:*\n`;
+      msg += `📅 *Tanda de Amasado Fresco:* ${diaEntrega}\n`;
+      msg += `📦 *Modalidad:* ${tipoEntrega === "delivery" ? `🏠 Delivery a ${direccion}` : "🏪 Retiro en Fábrica"}\n`;
+      msg += `💳 *Pago Elegido:* ${metodoPago === "transferencia" ? "Transferencia Bancaria (QR/Alias/CBU)" : "Coordinar con vendedor / Al retirar"}\n`;
+      msg += `👥 *Total de Porciones:* ${porcionesFinal} porciones\n`;
+      if (notas.trim()) msg += `📝 *Aclaraciones:* ${notas.trim()}\n`;
+      msg += `\n*Detalle de Variedades Frescas Encargadas:*\n`;
       items.forEach((it) => {
         msg += `• ${it.cantidad}x ${it.nombre} ($${(it.precio * it.cantidad).toLocaleString("es-AR")})\n`;
       });
-      msg += `\n💰 *TOTAL A ABONAR: $${totalPrice.toLocaleString("es-AR")}*\n\n`;
-      msg += `_Elaboración artesanal de pastas frescas sin conservantes. ¡Muchas gracias por tu pedido!_`;
+      msg += `\n💰 *TOTAL DE LA COMPRA: $${montoFinal.toLocaleString("es-AR")}*\n\n`;
+      msg += `_Pastas frescas sin conservantes · 72 hs en heladera / 90 días en freezer. ¡Muchas gracias!_`;
 
       setPedidoConfirmado({
         numero: numPedido,
         mensajeWhatsApp: msg,
-        monto: totalPrice,
-        porciones: totalPorciones,
+        monto: montoFinal,
+        porciones: porcionesFinal,
         diaElegido: diaEntrega,
+        modalidad: tipoEntrega === "delivery" ? `Envío a domicilio (${direccion})` : "Retiro en Fábrica",
+        metodo: metodoPago === "transferencia" ? "Transferencia (QR / Alias / CBU)" : "Coordinar con vendedor",
       });
 
       clearCart();
     } catch (err) {
       console.error("Error al registrar pedido:", err);
-      alert("Hubo un inconveniente al registrar el pedido. Puedes enviarlo directamente por WhatsApp.");
+      alert("Hubo un inconveniente al registrar el pedido. Puedes enviarlo directamente al vendedor por WhatsApp.");
     } finally {
       setLoading(false);
     }
@@ -161,13 +169,6 @@ export function CheckoutModal({ isOpen, onClose, config }: CheckoutModalProps) {
       pedidoConfirmado.mensajeWhatsApp
     )}`;
     window.open(url, "_blank");
-  };
-
-  const handleOpenPaymentLink = () => {
-    const link =
-      config.link_pago_mercado_pago ||
-      `https://link.mercadopago.com.ar/${config.mercado_pago_alias || "miapastabella"}`;
-    window.open(link, "_blank");
   };
 
   const copyToClipboard = (text: string, type: "alias" | "cbu") => {
@@ -184,21 +185,27 @@ export function CheckoutModal({ isOpen, onClose, config }: CheckoutModalProps) {
   const aliasActual = config.mercado_pago_alias || "MIAPASTABELLA.MP";
   const cbuActual = config.cbu_cuenta || "0000003100012345678901";
   const titularActual = config.titular_cuenta || "Mía Pasta Bella - Fábrica Artesanal";
+  const telefonoVendedor = config.whatsapp_numero || "+54 9 11 0000-0000";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-3 sm:p-4 overflow-y-auto animate-fade-in">
       <div className="relative w-full max-w-xl rounded-3xl bg-[#FAF6EE] shadow-2xl border border-amber-900/20 overflow-hidden my-4 sm:my-6">
-        {/* CABECERA */}
-        <div className="flex items-center justify-between border-b border-stone-200 bg-white px-5 sm:px-6 py-4">
-          <div className="flex items-center gap-2">
-            <span className="h-2.5 w-2.5 rounded-full bg-amber-600 animate-pulse" />
-            <h3 className="font-serif text-lg sm:text-xl font-bold text-[#2C1810]">
-              {pedidoConfirmado ? "¡Encargo Registrado con Éxito!" : "Encargo a la Fábrica de Pastas"}
-            </h3>
+        {/* CABECERA EDITORIAL DE FÁBRICA */}
+        <div className="flex items-center justify-between border-b border-[#E6D8C3] bg-white px-5 sm:px-6 py-4 shadow-xs">
+          <div className="flex items-center gap-2.5">
+            <span className="h-3 w-3 rounded-full bg-amber-600 animate-pulse" />
+            <div>
+              <h3 className="font-serif text-lg sm:text-xl font-bold text-[#2C1810]">
+                {pedidoConfirmado ? "¡Encargo Registrado en Fábrica!" : "Encargo de Pastas Frescas"}
+              </h3>
+              <span className="text-[10px] text-stone-500 font-medium block">
+                Mía Pasta Bella · Producción Artesanal sin Conservantes
+              </span>
+            </div>
           </div>
           <button
             onClick={onClose}
-            className="rounded-full p-2 text-stone-500 hover:bg-stone-100 hover:text-stone-800 transition-colors"
+            className="rounded-full p-2 text-stone-400 hover:bg-stone-100 hover:text-stone-700 transition-colors"
             aria-label="Cerrar"
           >
             <X className="h-5 w-5" />
@@ -206,10 +213,10 @@ export function CheckoutModal({ isOpen, onClose, config }: CheckoutModalProps) {
         </div>
 
         {/* =================================================================== */}
-        {/* PANTALLA 2: PEDIDO CONFIRMADO CON QR Y LINK DE PAGO INMEDIATO */}
+        {/* PANTALLA 2: CONFIRMACIÓN, QR TRANSFERENCIA Y CONTACTO VENDEDOR     */}
         {/* =================================================================== */}
         {pedidoConfirmado ? (
-          <div className="p-5 sm:p-7 space-y-5 max-h-[80vh] overflow-y-auto">
+          <div className="p-5 sm:p-7 space-y-5 max-h-[80vh] overflow-y-auto no-scrollbar">
             {/* ENCABEZADO DE ÉXITO */}
             <div className="text-center space-y-2">
               <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-emerald-100 text-emerald-700 ring-8 ring-emerald-50 mb-1">
@@ -217,83 +224,87 @@ export function CheckoutModal({ isOpen, onClose, config }: CheckoutModalProps) {
               </div>
 
               <div>
-                <span className="text-[11px] font-bold uppercase tracking-wider text-amber-900 bg-amber-100 border border-amber-300 px-3 py-0.5 rounded-full">
-                  Comprobante: {pedidoConfirmado.numero}
+                <span className="text-xs font-black uppercase tracking-wider text-amber-950 bg-amber-100 border border-amber-300 px-3.5 py-1 rounded-full shadow-xs">
+                  Encargo #{pedidoConfirmado.numero}
                 </span>
-                <h4 className="text-2xl font-serif font-black text-[#2C1810] mt-2">
-                  ¡Gracias por tu encargo, {nombre}!
+                <h4 className="text-2xl font-serif font-black text-[#2C1810] mt-2.5">
+                  ¡Encargo Confirmado, {nombre}!
                 </h4>
                 <p className="text-xs text-stone-600 max-w-md mx-auto mt-1 leading-relaxed">
-                  Tu orden fue ingresada en la tanda de elaboración fresca del{" "}
-                  <strong className="text-amber-900">{pedidoConfirmado.diaElegido}</strong>.
+                  Tu pedido ya quedó registrado para la tanda fresca del{" "}
+                  <strong className="text-amber-900 font-bold">{pedidoConfirmado.diaElegido}</strong>.
                 </p>
               </div>
             </div>
 
-            {/* CAJA DE IMPORTE SEGÚN CANTIDAD DE PORCIONES */}
-            <div className="p-4 bg-gradient-to-br from-amber-900 to-amber-950 text-white rounded-2xl shadow-md space-y-2">
-              <div className="flex justify-between items-center text-amber-200/90 text-xs">
-                <span>Rinde Total:</span>
-                <span className="font-bold text-white bg-amber-800/60 px-2 py-0.5 rounded-md">
-                  {pedidoConfirmado.porciones} porciones artesanales
+            {/* RESUMEN OFICIAL DE FÁBRICA: PORCIONES Y TOTAL */}
+            <div className="p-4 sm:p-5 bg-gradient-to-br from-[#2C1810] via-[#3D2015] to-[#1E0F09] text-white rounded-2xl shadow-lg space-y-2.5 border border-amber-500/30">
+              <div className="grid grid-cols-2 gap-2 text-xs border-b border-amber-500/20 pb-2.5">
+                <div>
+                  <span className="text-stone-400 text-[10px] block uppercase font-bold">Cliente</span>
+                  <strong className="text-white text-xs">{nombre}</strong>
+                </div>
+                <div>
+                  <span className="text-stone-400 text-[10px] block uppercase font-bold">Teléfono</span>
+                  <strong className="text-white text-xs">{telefono}</strong>
+                </div>
+              </div>
+
+              <div className="flex justify-between items-center text-amber-200 text-xs">
+                <span>Total de Porciones:</span>
+                <span className="font-bold text-white bg-amber-400/20 border border-amber-400/40 px-2.5 py-0.5 rounded-full">
+                  🍽️ {pedidoConfirmado.porciones} porciones de autor
                 </span>
               </div>
-              <div className="flex justify-between items-baseline pt-1 border-t border-amber-800/60">
-                <span className="text-xs font-semibold text-amber-100 uppercase tracking-wider">
-                  Total a Abonar:
+
+              <div className="flex justify-between items-baseline pt-1">
+                <span className="text-xs font-bold text-amber-100 uppercase tracking-wider">
+                  Total de la Compra:
                 </span>
                 <span className="font-serif text-3xl font-black text-amber-300">
                   ${pedidoConfirmado.monto.toLocaleString("es-AR")}
                 </span>
               </div>
-              <p className="text-[10px] text-amber-200/80 text-center pt-1">
-                ⏱️ Pastas frescas al día sin conservantes · Caducidad: 72 hs en heladera / 90 días en freezer
-              </p>
+
+              <div className="pt-2 border-t border-amber-500/20 text-[10px] text-amber-200/80 flex items-center justify-between">
+                <span>⏱️ Heladera: 72 hs</span>
+                <span>❄️ Freezer: 90 días</span>
+                <span>🌱 100% Sin aditivos</span>
+              </div>
             </div>
 
-            {/* SECCIÓN DE COBRO: QR Y LINK DE PAGO DIRECTO */}
-            <div className="p-4 sm:p-5 bg-white rounded-2xl border border-stone-200 shadow-sm space-y-4">
+            {/* SECCIÓN 1: PAGO POR TRANSFERENCIA CON QR Y DATOS BANCARIOS */}
+            <div className="p-4 sm:p-5 bg-white rounded-2xl border border-[#E6D8C3] shadow-xs space-y-4">
               <div className="text-center space-y-1">
-                <div className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-800 uppercase tracking-wider">
-                  <QrCode className="h-4 w-4" />
-                  <span>Escanea o Paga Directo</span>
+                <div className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-900 uppercase tracking-wider">
+                  <QrCode className="h-4 w-4 text-amber-700" />
+                  <span>Transferencia Inmediata</span>
                 </div>
-                <h5 className="text-sm font-bold text-stone-900">
-                  Código QR de Cobro & Link Directo
+                <h5 className="font-serif text-base font-bold text-[#2C1810]">
+                  QR de Pago & Datos Bancarios
                 </h5>
                 <p className="text-[11px] text-stone-500">
-                  Escaneá con la cámara de tu celular, Mercado Pago o cualquier app bancaria
+                  Escaneá desde tu app bancaria / Mercado Pago o transferí con Alias/CBU:
                 </p>
               </div>
 
-              {/* QR Canvas */}
+              {/* QR en Canvas */}
               <div className="flex flex-col items-center justify-center">
-                <div className="p-2.5 bg-white border-2 border-stone-200 rounded-2xl shadow-inner max-w-[200px]">
+                <div className="p-2.5 bg-white border-2 border-[#E6D8C3] rounded-2xl shadow-inner max-w-[190px]">
                   <canvas
                     ref={qrCanvasRef}
-                    className="w-44 h-44 object-contain"
+                    className="w-40 h-40 object-contain"
                     style={{ imageRendering: "pixelated" }}
                   />
                 </div>
               </div>
 
-              {/* Botón Pagar con Mercado Pago / Link de Pago */}
-              <button
-                type="button"
-                onClick={handleOpenPaymentLink}
-                className="w-full inline-flex items-center justify-center gap-2 bg-[#009EE3] hover:bg-[#0089C7] text-white font-bold py-3 px-4 rounded-xl text-xs sm:text-sm shadow-md transition-all active:scale-98"
-              >
-                <Sparkles className="h-4 w-4" />
-                <span>Pagar con Mercado Pago (Link Directo)</span>
-                <ExternalLink className="h-3.5 w-3.5 opacity-80" />
-              </button>
-
-              {/* Datos de Transferencia con botón Copiar */}
+              {/* Datos de Transferencia con botón de copia en 1 toque */}
               <div className="p-3.5 bg-stone-50 rounded-xl border border-stone-200 space-y-2.5 text-xs">
                 <div className="flex items-center justify-between">
                   <div>
                     <span className="block text-[10px] font-bold text-stone-400 uppercase">
-                      Alias de Pago:
+                      Alias de Transferencia:
                     </span>
                     <span className="font-mono font-bold text-stone-900 text-sm">
                       {aliasActual}
@@ -302,17 +313,17 @@ export function CheckoutModal({ isOpen, onClose, config }: CheckoutModalProps) {
                   <button
                     type="button"
                     onClick={() => copyToClipboard(aliasActual, "alias")}
-                    className="inline-flex items-center gap-1 bg-white hover:bg-stone-100 border border-stone-300 text-stone-700 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all active:scale-95"
+                    className="inline-flex items-center gap-1 bg-white hover:bg-stone-100 border border-stone-300 text-stone-700 px-3 py-1 rounded-lg text-xs font-bold transition-all shadow-xs active:scale-95"
                   >
                     {copiedAlias ? (
                       <>
                         <Check className="h-3.5 w-3.5 text-emerald-600" />
-                        <span className="text-emerald-700 font-bold">¡Copiado!</span>
+                        <span className="text-emerald-700">¡Copiado!</span>
                       </>
                     ) : (
                       <>
                         <Copy className="h-3.5 w-3.5 text-stone-500" />
-                        <span>Copiar Alias</span>
+                        <span>Copiar</span>
                       </>
                     )}
                   </button>
@@ -330,67 +341,96 @@ export function CheckoutModal({ isOpen, onClose, config }: CheckoutModalProps) {
                   <button
                     type="button"
                     onClick={() => copyToClipboard(cbuActual, "cbu")}
-                    className="inline-flex items-center gap-1 bg-white hover:bg-stone-100 border border-stone-300 text-stone-700 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all active:scale-95"
+                    className="inline-flex items-center gap-1 bg-white hover:bg-stone-100 border border-stone-300 text-stone-700 px-3 py-1 rounded-lg text-xs font-bold transition-all shadow-xs active:scale-95"
                   >
                     {copiedCbu ? (
                       <>
                         <Check className="h-3.5 w-3.5 text-emerald-600" />
-                        <span className="text-emerald-700 font-bold">¡Copiado!</span>
+                        <span className="text-emerald-700">¡Copiado!</span>
                       </>
                     ) : (
                       <>
                         <Copy className="h-3.5 w-3.5 text-stone-500" />
-                        <span>Copiar CBU</span>
+                        <span>Copiar</span>
                       </>
                     )}
                   </button>
                 </div>
 
                 <div className="border-t border-stone-200 pt-1.5 text-[11px] text-stone-500">
-                  <span className="font-semibold text-stone-700">Titular:</span> {titularActual}
+                  <span className="font-bold text-stone-700">Titular:</span> {titularActual}
                 </div>
               </div>
             </div>
 
-            {/* BOTÓN WHATSAPP PARA ENVIAR COMPROBANTE A LA FÁBRICA */}
-            <div className="space-y-2 pt-1">
+            {/* SECCIÓN 2: COORDINACIÓN DIRECTA CON EL VENDEDOR */}
+            <div className="p-4 sm:p-5 bg-gradient-to-br from-amber-50 to-crema-100 rounded-2xl border border-amber-300/80 space-y-3">
+              <div className="flex items-center gap-2">
+                <Phone className="h-4 w-4 text-amber-800 flex-shrink-0" />
+                <div>
+                  <h5 className="font-serif text-xs font-bold text-amber-950 uppercase tracking-wider">
+                    Atención Directa del Vendedor de Fábrica
+                  </h5>
+                  <p className="text-[11px] text-amber-900/80">
+                    Teléfono oficial: <strong className="text-amber-950">{telefonoVendedor}</strong>
+                  </p>
+                </div>
+              </div>
+
+              {/* Botón WhatsApp Principal */}
               <button
                 onClick={handleOpenWhatsApp}
-                className="w-full inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 px-6 rounded-2xl text-xs sm:text-sm shadow-lg shadow-emerald-900/10 transition-all active:scale-[0.98]"
+                className="w-full inline-flex items-center justify-center gap-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 px-6 rounded-2xl text-xs sm:text-sm shadow-lg shadow-emerald-900/20 transition-all active:scale-[0.98]"
               >
                 <MessageCircle className="h-5 w-5 fill-current" />
-                <span>Enviar Comprobante por WhatsApp a la Fábrica</span>
+                <span>📱 Enviar Comanda por WhatsApp al Vendedor</span>
               </button>
 
-              <button
-                onClick={onClose}
-                className="w-full text-xs font-semibold text-stone-500 hover:text-stone-800 py-1.5"
-              >
-                Cerrar y continuar en la tienda
-              </button>
+              <p className="text-[10px] text-stone-500 text-center leading-relaxed">
+                Al presionar, se abre WhatsApp con la comanda completa para confirmar el pago y coordinar el horario de retiro o entrega.
+              </p>
             </div>
+
+            <button
+              onClick={onClose}
+              className="w-full text-xs font-bold text-stone-500 hover:text-stone-800 py-2 text-center transition-colors"
+            >
+              Cerrar y volver a la fábrica
+            </button>
           </div>
         ) : (
           /* =================================================================== */
-          /* PANTALLA 1: FORMULARIO DE ENCARGO CON PORCIONES Y FECHA DE TANDA    */
+          /* PANTALLA 1: FORMULARIO DE ENCARGO CON RESUMEN SUPERIOR OBLIGATORIO  */
           /* =================================================================== */
-          <form onSubmit={handleSubmit} className="p-5 sm:p-7 space-y-5 max-h-[75vh] overflow-y-auto">
-            {/* AVISO DE FRESCA ELABORACIÓN & TANDAS */}
-            <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-3">
-              <Sparkles className="h-5 w-5 text-amber-700 shrink-0 mt-0.5" />
-              <div className="text-xs text-amber-900 leading-relaxed">
-                <strong className="block font-bold">Fábrica de Pastas Frescas de Autor</strong>
-                <span>
-                  Elaboramos bajo pedido para garantizar máxima frescura (sin conservantes). Consumo dentro de las 72 hs o congelado directo.
+          <form onSubmit={handleSubmit} className="p-5 sm:p-7 space-y-5 max-h-[75vh] overflow-y-auto no-scrollbar">
+            {/* RESUMEN SUPERIOR OBLIGATORIO DEL PEDIDO */}
+            <div className="p-4 bg-gradient-to-r from-stone-900 via-stone-800 to-amber-950 text-white rounded-2xl shadow-md border border-amber-500/30 space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-stone-300">Variedades en canasta:</span>
+                <span className="font-bold text-white">{items.length} variedades</span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-stone-300">Total de Porciones:</span>
+                <span className="font-bold text-amber-300 bg-amber-400/20 px-2.5 py-0.5 rounded-full border border-amber-400/40">
+                  🍽️ {totalPorciones} porciones artesanales
                 </span>
               </div>
+              <div className="flex items-center justify-between border-t border-white/10 pt-2">
+                <span className="text-xs uppercase font-bold text-stone-300">Total de la Compra:</span>
+                <span className="font-serif text-2xl font-black text-amber-300">
+                  ${totalPrice.toLocaleString("es-AR")}
+                </span>
+              </div>
+              <p className="text-[10px] text-amber-200/80 pt-1 border-t border-white/10 text-center">
+                🌾 Elaboración bajo pedido sin conservantes · 72 hs en heladera / 90 días en freezer
+              </p>
             </div>
 
-            {/* 1. SELECCIÓN DE DÍA DE ELABORACIÓN / ENTREGA (TANDA SEMANAL) */}
+            {/* 1. SELECCIÓN DE DÍA DE ELABORACIÓN (TANDA SEMANAL) */}
             <div>
-              <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                <Calendar className="h-3.5 w-3.5 text-amber-700" />
-                <span>1. Elige tu Tanda de Amasado / Entrega</span>
+              <label className="block text-xs font-bold text-[#2C1810] uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                <Calendar className="h-4 w-4 text-amber-700" />
+                <span>1. Tanda de Amasado Fresco a Elegir</span>
               </label>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {diasDisponibles.map((dia) => {
@@ -402,7 +442,7 @@ export function CheckoutModal({ isOpen, onClose, config }: CheckoutModalProps) {
                       onClick={() => setDiaEntrega(dia)}
                       className={`p-3 rounded-2xl border text-center transition-all ${
                         selected
-                          ? "border-amber-800 bg-amber-800 text-white font-bold shadow-sm"
+                          ? "border-amber-700 bg-amber-700 text-white font-bold shadow-sm"
                           : "border-stone-200 bg-white text-stone-700 hover:border-amber-400"
                       }`}
                     >
@@ -415,13 +455,13 @@ export function CheckoutModal({ isOpen, onClose, config }: CheckoutModalProps) {
                 })}
               </div>
               <p className="text-[11px] text-stone-500 mt-1.5">
-                {config.cierre_pedidos_info || "Tomamos pedidos hasta 24 hs previas al amasado."}
+                {config.cierre_pedidos_info || "Tomamos pedidos con anticipación al amasado para garantizar frescura."}
               </p>
             </div>
 
-            {/* 2. MODALIDAD DE ENTREGA */}
+            {/* 2. MODALIDAD DE RETIRO O DELIVERY */}
             <div>
-              <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-bold text-[#2C1810] uppercase tracking-wider mb-2">
                 2. Modalidad de Retiro o Entrega
               </label>
               <div className="grid grid-cols-2 gap-2.5">
@@ -430,7 +470,7 @@ export function CheckoutModal({ isOpen, onClose, config }: CheckoutModalProps) {
                   onClick={() => setTipoEntrega("retiro")}
                   className={`flex items-center gap-2.5 p-3 rounded-2xl border text-left transition-all ${
                     tipoEntrega === "retiro"
-                      ? "border-amber-700 bg-amber-50/80 ring-2 ring-amber-600/20 text-[#2C1810]"
+                      ? "border-amber-700 bg-amber-50 ring-2 ring-amber-600/20 text-[#2C1810]"
                       : "border-stone-200 bg-white text-stone-600 hover:border-stone-300"
                   }`}
                 >
@@ -446,29 +486,29 @@ export function CheckoutModal({ isOpen, onClose, config }: CheckoutModalProps) {
                   onClick={() => setTipoEntrega("delivery")}
                   className={`flex items-center gap-2.5 p-3 rounded-2xl border text-left transition-all ${
                     tipoEntrega === "delivery"
-                      ? "border-amber-700 bg-amber-50/80 ring-2 ring-amber-600/20 text-[#2C1810]"
+                      ? "border-amber-700 bg-amber-50 ring-2 ring-amber-600/20 text-[#2C1810]"
                       : "border-stone-200 bg-white text-stone-600 hover:border-stone-300"
                   }`}
                 >
                   <Truck className="h-4 w-4 text-amber-700 shrink-0" />
                   <div>
-                    <span className="block text-xs font-bold">Delivery a Domicilio</span>
+                    <span className="block text-xs font-bold">Envío a Domicilio</span>
                     <span className="text-[10px] text-stone-500">Coordinado en el día</span>
                   </div>
                 </button>
               </div>
             </div>
 
-            {/* 3. DATOS DEL CLIENTE */}
+            {/* 3. DATOS OBLIGATORIOS DEL CLIENTE */}
             <div className="space-y-3">
-              <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider">
-                3. Tus Datos para el Pedido
+              <label className="block text-xs font-bold text-[#2C1810] uppercase tracking-wider">
+                3. Datos del Cliente
               </label>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <div>
                   <span className="block text-[11px] font-semibold text-stone-600 mb-1">
-                    Nombre Completo *
+                    Nombre y Apellido *
                   </span>
                   <input
                     type="text"
@@ -476,13 +516,13 @@ export function CheckoutModal({ isOpen, onClose, config }: CheckoutModalProps) {
                     onChange={(e) => setNombre(e.target.value)}
                     placeholder="Ej: Carolina Rossi"
                     required
-                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-amber-600"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-amber-600"
                   />
                 </div>
 
                 <div>
                   <span className="block text-[11px] font-semibold text-stone-600 mb-1">
-                    Teléfono WhatsApp *
+                    Teléfono / WhatsApp *
                   </span>
                   <input
                     type="tel"
@@ -490,7 +530,7 @@ export function CheckoutModal({ isOpen, onClose, config }: CheckoutModalProps) {
                     onChange={(e) => setTelefono(e.target.value)}
                     placeholder="Ej: 11 5555 1234"
                     required
-                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-amber-600"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-amber-600"
                   />
                 </div>
               </div>
@@ -504,49 +544,53 @@ export function CheckoutModal({ isOpen, onClose, config }: CheckoutModalProps) {
                     type="text"
                     value={direccion}
                     onChange={(e) => setDireccion(e.target.value)}
-                    placeholder="Calle, número, timbre/piso y localidad"
+                    placeholder="Calle, número, piso/depto y localidad"
                     required
-                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-amber-600"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-amber-600"
                   />
                 </div>
               )}
             </div>
 
-            {/* 4. MÉTODO DE PAGO */}
+            {/* 4. OPCIONES DE PAGO */}
             <div>
-              <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">
-                4. Método de Pago
+              <label className="block text-xs font-bold text-[#2C1810] uppercase tracking-wider mb-2">
+                4. Forma de Pago
               </label>
-              <div className="grid grid-cols-3 gap-2">
-                {[
-                  { id: "mercado_pago", label: "Mercado Pago (QR/Link)", icon: Sparkles },
-                  { id: "transferencia", label: "Transferencia / Alias", icon: CreditCard },
-                  { id: "efectivo", label: "Efectivo", icon: Banknote },
-                ].map((m) => {
-                  const Icon = m.icon;
-                  const selected = metodoPago === m.id;
-                  return (
-                    <button
-                      key={m.id}
-                      type="button"
-                      onClick={() => setMetodoPago(m.id as any)}
-                      className={`flex flex-col items-center justify-center p-2.5 rounded-xl border text-center transition-all ${
-                        selected
-                          ? "border-amber-700 bg-amber-50 text-[#2C1810] font-bold shadow-xs"
-                          : "border-stone-200 bg-white text-stone-600 hover:border-stone-300"
-                      }`}
-                    >
-                      <Icon className="h-4 w-4 mb-1 text-amber-700" />
-                      <span className="text-[10px] leading-tight">{m.label}</span>
-                    </button>
-                  );
-                })}
+              <div className="grid grid-cols-2 gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setMetodoPago("transferencia")}
+                  className={`flex flex-col items-center justify-center p-3 rounded-2xl border text-center transition-all ${
+                    metodoPago === "transferencia"
+                      ? "border-amber-700 bg-amber-50 text-[#2C1810] font-bold shadow-xs ring-2 ring-amber-600/20"
+                      : "border-stone-200 bg-white text-stone-600 hover:border-stone-300"
+                  }`}
+                >
+                  <CreditCard className="h-5 w-5 mb-1 text-amber-700" />
+                  <span className="text-xs font-bold leading-tight">Transferencia Inmediata</span>
+                  <span className="text-[10px] text-stone-500 mt-0.5">QR · Alias · CBU</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setMetodoPago("efectivo")}
+                  className={`flex flex-col items-center justify-center p-3 rounded-2xl border text-center transition-all ${
+                    metodoPago === "efectivo"
+                      ? "border-amber-700 bg-amber-50 text-[#2C1810] font-bold shadow-xs ring-2 ring-amber-600/20"
+                      : "border-stone-200 bg-white text-stone-600 hover:border-stone-300"
+                  }`}
+                >
+                  <Banknote className="h-5 w-5 mb-1 text-amber-700" />
+                  <span className="text-xs font-bold leading-tight">Coordinar con Vendedor</span>
+                  <span className="text-[10px] text-stone-500 mt-0.5">Efectivo / Al retirar</span>
+                </button>
               </div>
             </div>
 
             {/* 5. ACLARACIONES */}
             <div>
-              <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1">
+              <label className="block text-xs font-bold text-[#2C1810] uppercase tracking-wider mb-1">
                 5. Aclaraciones Especiales (Opcional)
               </label>
               <textarea
@@ -558,26 +602,15 @@ export function CheckoutModal({ isOpen, onClose, config }: CheckoutModalProps) {
               />
             </div>
 
-            {/* RESUMEN POR PORCIONES Y BOTÓN DE CONFIRMACIÓN */}
+            {/* BOTÓN DE CONFIRMACIÓN */}
             <div className="pt-3 border-t border-stone-200 space-y-3">
-              <div className="flex justify-between items-center text-xs text-stone-600">
-                <span>Rinde total del pedido:</span>
-                <span className="font-bold text-amber-900 bg-amber-100 px-2 py-0.5 rounded-md">
-                  {totalPorciones} porciones para la mesa
-                </span>
-              </div>
-
-              <div className="flex justify-between items-baseline">
-                <span className="text-xs font-bold text-stone-700 uppercase">Total a Abonar:</span>
-                <span className="font-serif text-2xl font-black text-amber-900">
-                  ${totalPrice.toLocaleString("es-AR")}
-                </span>
-              </div>
-
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full inline-flex items-center justify-center gap-2 bg-amber-800 hover:bg-amber-900 disabled:opacity-50 text-white font-bold py-3.5 px-6 rounded-2xl text-xs sm:text-sm shadow-md transition-all active:scale-[0.98]"
+                className="w-full inline-flex items-center justify-center gap-2 text-white font-bold py-4 px-6 rounded-2xl text-xs sm:text-sm shadow-xl transition-all active:scale-[0.98] disabled:opacity-50"
+                style={{
+                  background: "linear-gradient(135deg, #8C4F37 0%, #703D2A 100%)",
+                }}
               >
                 {loading ? (
                   <span>Registrando encargo en la fábrica...</span>

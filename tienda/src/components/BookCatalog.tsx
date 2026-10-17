@@ -281,23 +281,23 @@ export function BookCatalog({
               )}
             </div>
 
-            {/* FEATURE PRO: Calculadora de Comensales / Modo Anfitrión (7 columnas) */}
+            {/* FEATURE PRO: Calculadora de Porciones de Fábrica (7 columnas) */}
             <div className="lg:col-span-7 bg-white rounded-2xl border border-[#DFD3BD] p-2 sm:p-2.5 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-2.5">
               <div className="flex items-center gap-2 pl-2">
-                <ChefHat className="h-4 w-4 text-terracota-600 flex-shrink-0" />
+                <span className="text-base">🧮</span>
                 <span className="text-xs font-bold text-[#2C1810] whitespace-nowrap">
-                  ¿Para cuántos comensales cocinás?
+                  Calculador de Fábrica: ¿Cuántas porciones necesitás?
                 </span>
               </div>
 
               {/* Botones Píldora de Selección */}
               <div className="flex items-center gap-1.5 flex-wrap justify-center sm:justify-end w-full sm:w-auto">
                 {[
-                  { label: "Todos", value: null },
-                  { label: "2 pers.", value: 2 },
-                  { label: "4 pers.", value: 4 },
-                  { label: "6 pers.", value: 6 },
-                  { label: "8+ pers.", value: 8 },
+                  { label: "Ver Todo", value: null },
+                  { label: "2 porciones", value: 2 },
+                  { label: "4 porciones", value: 4 },
+                  { label: "6 porciones", value: 6 },
+                  { label: "8+ porciones", value: 8 },
                 ].map((pill) => {
                   const isSelected = comensalesTarget === pill.value;
                   return (
@@ -735,15 +735,15 @@ function ProductCard({
   const isOutOfStock = producto.stock !== undefined && producto.stock <= 0;
   const isLowStock = producto.stock !== undefined && producto.stock > 0 && producto.stock <= 5;
 
-  const rindePlatos = producto.rinde_porciones || 2;
+  const rindePorciones = producto.rinde_porciones || 2;
 
-  // Cálculo sugerido para el Modo Anfitrión
+  // Cálculo sugerido para el pedido de fábrica
   const unidadesSugeridas = useMemo(() => {
     if (!comensalesTarget || isSauce) return 1;
-    return Math.max(1, Math.ceil(comensalesTarget / rindePlatos));
-  }, [comensalesTarget, rindePlatos, isSauce]);
+    return Math.max(1, Math.ceil(comensalesTarget / rindePorciones));
+  }, [comensalesTarget, rindePorciones, isSauce]);
 
-  const totalPlatosSugeridos = unidadesSugeridas * rindePlatos;
+  const totalPorcionesSugeridas = unidadesSugeridas * rindePorciones;
 
   return (
     <div className="rounded-3xl bg-white border border-[#E6D8C3] shadow-sm hover:shadow-2xl transition-all duration-500 flex flex-col justify-between overflow-hidden group">
@@ -792,7 +792,7 @@ function ProductCard({
           </span>
         </div>
 
-        {/* BADGES INFERIORES SOBRE LA FOTO: COCCIÓN Y PORCIONES */}
+        {/* BADGES INFERIORES SOBRE LA FOTO: COCCIÓN Y PORCIONES DE FÁBRICA */}
         <div className="absolute bottom-3 inset-x-3 flex items-center justify-between text-white text-[11px] font-bold pointer-events-none">
           <div className="flex items-center gap-1.5 rounded-full bg-black/45 backdrop-blur-md px-2.5 py-1 border border-white/15">
             <Clock className="h-3.5 w-3.5 text-amber-300" />
@@ -801,12 +801,12 @@ function ProductCard({
 
           <div className="flex items-center gap-1.5 rounded-full bg-black/45 backdrop-blur-md px-2.5 py-1 border border-white/15">
             <Users className="h-3.5 w-3.5 text-amber-300" />
-            <span>Rinde {rindePlatos} {rindePlatos === 1 ? "plato" : "platos"}</span>
+            <span>Rinde {rindePorciones} {rindePorciones === 1 ? "porción" : "porciones"}</span>
           </div>
         </div>
       </div>
 
-      {/* 2. CUERPO DE LA TARJETA (TÍTULO, INGREDIENTES Y RECOMENDACIÓN) */}
+      {/* 2. CUERPO DE LA TARJETA (TÍTULO, INGREDIENTES Y RECOMENDACIÓN DE FÁBRICA) */}
       <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between space-y-4">
         <div className="space-y-2.5">
           <h3 className="font-serif text-xl font-bold text-[#2C1810] group-hover:text-terracota-700 transition-colors leading-snug">
@@ -818,12 +818,12 @@ function ProductCard({
             {producto.ingredientes}
           </div>
 
-          {/* Chip de Modo Anfitrión si está activo */}
+          {/* Chip de Porciones si está activo el calculador */}
           {comensalesTarget && !isSauce && (
             <div className="mt-3 rounded-xl bg-amber-50 border border-amber-300/70 p-2.5 text-xs text-amber-950 flex items-center gap-2">
-              <ChefHat className="h-4 w-4 text-amber-700 flex-shrink-0" />
+              <span className="text-base flex-shrink-0">🧮</span>
               <span>
-                Para tus <strong>{comensalesTarget} comensales</strong>: llevá <strong>{unidadesSugeridas} u.</strong> ({totalPlatosSugeridos} platos).
+                Para tus <strong>{comensalesTarget} porciones</strong>: encargá <strong>{unidadesSugeridas} {producto.unidad_medida.toLowerCase().includes("caja") ? "cajas" : "unidades"}</strong> (rinde {totalPorcionesSugeridas} porciones).
               </span>
             </div>
           )}
@@ -831,7 +831,7 @@ function ProductCard({
 
         {/* 3. PIE DE COMPRA BLINDADO (CERO RECORTES) */}
         <div className="pt-4 border-t border-[#F0E6D2] space-y-3">
-          {/* Fila Superior: Precio y Conservación */}
+          {/* Fila Superior: Precio y Conservación Corta de Fábrica */}
           <div className="flex items-baseline justify-between gap-2">
             <div>
               <span className="text-[10px] uppercase font-black text-stone-400 block tracking-wider">
@@ -842,9 +842,9 @@ function ProductCard({
               </span>
             </div>
 
-            <div className="text-right text-[11px] font-semibold text-stone-500">
-              <span className="block">⏱️ 72h heladera</span>
-              <span className="text-[10px] text-stone-400">❄️ 90d freezer</span>
+            <div className="text-right text-[11px] font-semibold text-stone-600">
+              <span className="block text-terracota-800 font-bold">🌿 Fresco: 72 hs en heladera</span>
+              <span className="text-[10px] text-stone-500">❄️ Freezer: 90 días</span>
             </div>
           </div>
 

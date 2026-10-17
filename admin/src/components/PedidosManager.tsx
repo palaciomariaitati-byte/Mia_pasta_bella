@@ -40,8 +40,8 @@ export function PedidosManager({ initialOrders }: PedidosManagerProps) {
   const [selectedEstado, setSelectedEstado] = useState<string>("todos");
   const [selectedTipoEntrega, setSelectedTipoEntrega] = useState<string>("todos");
 
-  // Estado para impresión individual de comanda
-  const [ticketToPrint, setTicketToPrint] = useState<PedidoAdminItem | null>(null);
+  // Estado para impresión del rótulo de caja de fábrica
+  const [labelToPrint, setLabelToPrint] = useState<PedidoAdminItem | null>(null);
 
   // Extraer lista única de tandas presentes en pedidos
   const availableTandas = useMemo(() => {
@@ -681,13 +681,24 @@ export function PedidosManager({ initialOrders }: PedidosManagerProps) {
                             href={waUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs active:scale-95"
+                            className="inline-flex items-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs active:scale-95"
                             title="Avisar al cliente por WhatsApp con mensaje contextual"
                           >
                             <MessageCircle className="h-3.5 w-3.5 fill-current" />
                             <span>Avisar</span>
                           </a>
                         )}
+
+                        {/* Botón Rótulo de Caja para Despacho */}
+                        <button
+                          type="button"
+                          onClick={() => setLabelToPrint(pedido)}
+                          className="inline-flex items-center gap-1.5 px-3 py-2 bg-amber-100 hover:bg-amber-200 text-amber-950 border border-amber-300 rounded-xl text-xs font-bold transition-all shadow-xs active:scale-95"
+                          title="Imprimir Rótulo de Caja con vencimiento corto y cocción"
+                        >
+                          <Printer className="h-3.5 w-3.5 text-amber-800" />
+                          <span>🏷️ Rótulo de Caja</span>
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -695,6 +706,136 @@ export function PedidosManager({ initialOrders }: PedidosManagerProps) {
               })}
             </div>
           )}
+        </div>
+      )}
+
+      {/* ============================================================== */}
+      {/* MODAL IMPRIMIBLE: RÓTULO DE CAJA DE FÁBRICA (10x15 CM) */}
+      {/* ============================================================== */}
+      {labelToPrint && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto print:p-0 print:bg-white print:static">
+          <div
+            className="fixed inset-0 print:hidden"
+            onClick={() => setLabelToPrint(null)}
+          />
+
+          <div className="relative z-10 w-full max-w-md bg-white rounded-3xl shadow-2xl border-2 border-stone-800 p-6 space-y-4 print:shadow-none print:border-2 print:border-black print:rounded-none print:max-w-none print:w-full print:p-4">
+            {/* Header del Rótulo */}
+            <div className="text-center border-b-2 border-dashed border-stone-400 pb-3">
+              <span className="text-[10px] uppercase font-black tracking-widest text-stone-500 block">
+                Fábrica Artesanal de Pastas Frescas
+              </span>
+              <h3 className="font-serif text-xl font-black text-stone-950 uppercase tracking-tight">
+                Mía Pasta Bella
+              </h3>
+              <p className="text-[10px] font-bold text-amber-800 uppercase mt-0.5">
+                Rótulo de Control, Cocción y Despacho en Fresco
+              </p>
+            </div>
+
+            {/* Datos Principales del Pedido */}
+            <div className="grid grid-cols-2 gap-2 text-xs border-b border-stone-200 pb-3">
+              <div>
+                <span className="text-[9px] uppercase font-bold text-stone-400 block">Comprobante</span>
+                <strong className="text-sm font-black font-mono text-stone-900">
+                  #{labelToPrint.numero_comprobante}
+                </strong>
+              </div>
+              <div className="text-right">
+                <span className="text-[9px] uppercase font-bold text-stone-400 block">Fecha Amasado</span>
+                <strong className="text-xs font-bold text-stone-800">
+                  {labelToPrint.dia_entrega || new Date(labelToPrint.fecha).toLocaleDateString("es-AR")}
+                </strong>
+              </div>
+              <div className="col-span-2 pt-1">
+                <span className="text-[9px] uppercase font-bold text-stone-400 block">Cliente Encargante</span>
+                <strong className="text-sm font-bold text-stone-950 block">
+                  {labelToPrint.cliente_nombre}
+                </strong>
+                <span className="text-xs text-stone-600 font-mono">
+                  Tel: {labelToPrint.cliente_telefono}
+                </span>
+              </div>
+              {labelToPrint.cliente_direccion && (
+                <div className="col-span-2 text-[11px] text-stone-600 bg-stone-50 p-2 rounded-lg border border-stone-200">
+                  <strong>Entrega:</strong> {labelToPrint.cliente_direccion}
+                </div>
+              )}
+            </div>
+
+            {/* Variedades y Porciones en la Caja */}
+            <div className="space-y-1.5 border-b border-stone-200 pb-3 text-xs">
+              <div className="flex justify-between items-center text-[10px] font-bold text-stone-400 uppercase tracking-wider">
+                <span>Variedad Fresca en Caja</span>
+                <span>Cant.</span>
+              </div>
+              {(labelToPrint.items || []).map((it) => (
+                <div key={it.id} className="flex justify-between items-baseline font-semibold text-stone-900">
+                  <span>{it.producto_nombre}</span>
+                  <span className="font-mono font-bold bg-stone-100 px-2 py-0.5 rounded">
+                    {it.cantidad} {it.cantidad === 1 ? "caja" : "cajas"}
+                  </span>
+                </div>
+              ))}
+              <div className="pt-2 flex justify-between items-center text-xs font-bold text-amber-950 bg-amber-50 p-2 rounded-lg border border-amber-200">
+                <span>Total de Porciones que rinde:</span>
+                <span className="font-black text-sm">
+                  {labelToPrint.total_porciones || (labelToPrint.items || []).reduce((acc, it) => acc + it.cantidad * 2, 0)} porciones
+                </span>
+              </div>
+            </div>
+
+            {/* REGLA DE ORO DE VENCIMIENTO CORTO */}
+            <div className="rounded-xl border-2 border-stone-900 p-2.5 text-center bg-stone-50 space-y-1">
+              <span className="text-[10px] font-black uppercase tracking-wider text-stone-900 block">
+                ⚠️ PASTA FRESCA SIN CONSERVANTES · CORTA VIDA ÚTIL
+              </span>
+              <div className="flex justify-around text-xs font-bold text-stone-800 pt-0.5">
+                <span>🧊 Heladera: <strong>72 Horas</strong></span>
+                <span>❄️ Freezer: <strong>90 Días</strong></span>
+              </div>
+            </div>
+
+            {/* Minutos de Cocción */}
+            <div className="text-[11px] text-stone-700 bg-stone-100 p-2 rounded-lg border border-stone-200 leading-snug">
+              <strong>⏱️ Cocción de Fábrica:</strong> Hervir en abundante agua con sal (1L por porción) a fuego vivo durante <strong>3 a 5 minutos</strong>. Retirar con espumadera sin colar en seco.
+            </div>
+
+            {/* Monto y Estado de Pago */}
+            <div className="flex justify-between items-center pt-1 border-t-2 border-dashed border-stone-400">
+              <div>
+                <span className="text-[9px] uppercase font-bold text-stone-400 block">Total del Pedido</span>
+                <span className="font-serif text-xl font-black text-stone-950">
+                  ${labelToPrint.total.toLocaleString("es-AR")}
+                </span>
+              </div>
+              <div className="text-right">
+                <span className="text-[9px] uppercase font-bold text-stone-400 block">Modalidad de Pago</span>
+                <span className="font-bold text-xs uppercase px-2 py-0.5 bg-stone-900 text-white rounded">
+                  {labelToPrint.metodo_pago}
+                </span>
+              </div>
+            </div>
+
+            {/* Botones de Acción (ocultos al imprimir) */}
+            <div className="pt-2 flex gap-2 print:hidden">
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="flex-1 py-3 px-4 bg-amber-800 hover:bg-amber-900 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2 active:scale-95"
+              >
+                <Printer className="h-4 w-4" />
+                <span>Imprimir Rótulo (10x15cm)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setLabelToPrint(null)}
+                className="py-3 px-4 bg-stone-200 hover:bg-stone-300 text-stone-800 font-bold text-xs rounded-xl transition-all"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
