@@ -1,0 +1,27 @@
+{
+  "name": "Mia Pasta Bella - Panel Administrativo",
+  "short_name": "Admin Pasta Bella",
+  "description": "Panel de control integral y administración para Mia Pasta Bella",
+  "start_url": "/",
+  "id": "/admin",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#FFFFFF",
+  "theme_color": "#4D281B",
+  "icons": [
+    {
+      "src": "/images/logo.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/logo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "lang": "es"
+}

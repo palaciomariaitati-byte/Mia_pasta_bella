@@ -1,0 +1,11 @@
+{
+  "/_not-found/page": "/_not-found",
+  "/login/page": "/login",
+  "/pedidos/page": "/pedidos",
+  "/crm/page": "/crm",
+  "/catalogo/page": "/catalogo",
+  "/textos/page": "/textos",
+  "/contabilidad/page": "/contabilidad",
+  "/qr/page": "/qr",
+  "/page": "/"
+}

@@ -1,0 +1,27 @@
+{
+  "name": "Mia Pasta Bella - Fábrica de Pastas Frescas",
+  "short_name": "Mia Pasta Bella",
+  "description": "Fábrica Artesanal de Pastas Frescas, Congelados y Pre-Pizzas a la Piedra",
+  "start_url": "/",
+  "id": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#FAF6EE",
+  "theme_color": "#8C4F37",
+  "icons": [
+    {
+      "src": "/images/logo.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/logo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["food", "shopping"],
+  "lang": "es"
+}

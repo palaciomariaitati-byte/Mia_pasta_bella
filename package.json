@@ -1,12 +1,16 @@
 {
-  "name": "mia-pasta-bella",
-  "version": "0.1.0",
+  "name": "mia-pasta-bella-workspace",
+  "version": "1.0.0",
   "private": true,
+  "workspaces": [
+    "tienda",
+    "admin"
+  ],
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "dev:tienda": "npm run dev --workspace=tienda",
+    "dev:admin": "npm run dev --workspace=admin",
+    "build:tienda": "npm run build --workspace=tienda",
+    "build:admin": "npm run build --workspace=admin"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",
