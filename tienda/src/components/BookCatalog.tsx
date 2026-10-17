@@ -8,16 +8,14 @@ import {
   Search,
   X,
   ArrowRight,
+  ArrowLeft,
   Clock,
   Users,
   Snowflake,
   Heart,
   Sparkles,
   Award,
-  ChevronDown,
-  Filter,
   MessageCircle,
-  ShieldCheck,
   Home,
   Truck,
   Leaf,
@@ -25,6 +23,8 @@ import {
   QrCode,
   MapPin,
   Calendar,
+  UtensilsCrossed,
+  Flame,
 } from "lucide-react";
 import { CategoriaItem, ProductoItem, TiendaConfig } from "@/lib/db";
 import { useCart } from "@/context/cart-context";
@@ -80,6 +80,38 @@ function getCategoryImageUrl(cat: CategoriaItem, allProducts: ProductoItem[]): s
   return "https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=800&q=80";
 }
 
+/**
+ * Helper para sugerir maridaje o complemento artesanal según la categoría
+ */
+function getComplementoSugerido(catId: string, nombre: string): string {
+  const text = `${catId} ${nombre}`.toLowerCase();
+  if (text.includes("tallarin") || text.includes("fideo")) {
+    return "🥫 Maridaje ideal: Salsa Filetto casera, Pesto genovés o crema de salvia y manteca.";
+  }
+  if (text.includes("sorrentino")) {
+    return "🧀 Sugerencia de autor: Salsa suave cuatro quesos, crema de nuez o pomodoro artesanal.";
+  }
+  if (text.includes("raviol")) {
+    return "🥫 Maridaje ideal: Salsa boloñesa tradicional con carne braseada o salsa rosa suave.";
+  }
+  if (text.includes("noqui")) {
+    return "🍅 Maridaje ideal: Clásico tuco casero o manteca clarificada con hojas de salvia fresca.";
+  }
+  if (text.includes("tortellini") || text.includes("capelletti")) {
+    return "🍲 Sugerencia de autor: Exquisitos en caldo humeante (in brodo) o con manteca y parmesano.";
+  }
+  if (text.includes("prepizz")) {
+    return "🔥 Tip de fábrica: Gratinar a horno muy fuerte (250°C) durante 6 a 8 minutos con abundante mozzarella.";
+  }
+  if (text.includes("empanada")) {
+    return "🥟 Tip de fábrica: Hornear a 220°C por 12-15 min pinceladas con huevo de campo.";
+  }
+  if (text.includes("tarta")) {
+    return "🥧 Tip de fábrica: Calentar 10 min a horno medio. Rinde ideal con ensalada fresca de hojas verdes.";
+  }
+  return "✨ Elaborado en tanda fresca del día con ingredientes 100% naturales.";
+}
+
 export function BookCatalog({
   categorias,
   productos,
@@ -87,50 +119,69 @@ export function BookCatalog({
   onOpenSplash,
   onOpenQR,
 }: BookCatalogProps) {
+  // selectedCategoryId: null = Portada Principal Limpia, string = Subpágina de Categoría
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [comensalesTarget, setComensalesTarget] = useState<number | null>(null);
   const [addedId, setAddedId] = useState<string | null>(null);
 
-  const { addItem, setIsCartOpen } = useCart();
+  const { addItem, totalCount, setIsCartOpen } = useCart();
 
   const telefonoLimpio = config.whatsapp_numero.replace(/[^0-9]/g, "");
   const whatsappUrl = `https://wa.me/${telefonoLimpio}?text=${encodeURIComponent(
     config.whatsapp_mensaje
   )}`;
 
-  // Filtrado reactivo de productos
-  const filteredProducts = useMemo(() => {
-    let prods = productos;
+  // Categoría seleccionada actualmente
+  const selectedCategory = useMemo(() => {
+    if (!selectedCategoryId) return null;
+    return categorias.find((c) => c.id === selectedCategoryId) || null;
+  }, [selectedCategoryId, categorias]);
 
-    // 1. Filtrar por categoría seleccionada
-    if (selectedCategoryId) {
-      prods = prods.filter((p) => p.categoria_id === selectedCategoryId);
-    }
+  // Productos de la categoría activa (con filtro de búsqueda interno)
+  const categoryProducts = useMemo(() => {
+    if (!selectedCategoryId) return [];
+    let prods = productos.filter((p) => p.categoria_id === selectedCategoryId);
 
-    // 2. Filtrar por búsqueda textual
     const q = searchQuery.trim().toLowerCase();
     if (q) {
       prods = prods.filter(
         (p) =>
           p.nombre.toLowerCase().includes(q) ||
-          (p.ingredientes && p.ingredientes.toLowerCase().includes(q)) ||
-          (p.categoria_nombre && p.categoria_nombre.toLowerCase().includes(q))
+          (p.ingredientes && p.ingredientes.toLowerCase().includes(q))
       );
     }
 
-    // 3. Filtrar por recomendador de comensales (Modo Anfitrión)
     if (comensalesTarget) {
-      prods = prods.filter((p) => {
-        const rinde = p.rinde_porciones || 2;
-        return rinde >= 2;
-      });
+      prods = prods.filter((p) => (p.rinde_porciones || 2) >= 2);
     }
 
     return prods;
   }, [productos, selectedCategoryId, searchQuery, comensalesTarget]);
 
-  // Manejo de adición al carrito con feedback visual
+  // Cambiar a subpágina de categoría con scroll suave hacia arriba
+  const handleOpenCategory = (catId: string) => {
+    setSelectedCategoryId(catId);
+    setSearchQuery("");
+    setComensalesTarget(null);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // Regresar a la portada principal con scroll suave hacia la grilla de categorías
+  const handleBackToHome = () => {
+    setSelectedCategoryId(null);
+    setSearchQuery("");
+    setComensalesTarget(null);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const scrollToCategories = () => {
+    const el = document.getElementById("nuestras-pastas");
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   const handleAddToCart = (producto: ProductoItem) => {
     addItem(
       {
@@ -149,29 +200,330 @@ export function BookCatalog({
     setTimeout(() => setAddedId(null), 1400);
   };
 
-  const scrollToSection = (id: string) => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth" });
-    }
-  };
+  // ==============================================================================
+  // VISTA B: SUBPÁGINA DEDICADA DE CATEGORÍA SELECCIONADA
+  // ==============================================================================
+  if (selectedCategory) {
+    const catImage = getCategoryImageUrl(selectedCategory, productos);
+    const totalVariedades = productos.filter((p) => p.categoria_id === selectedCategory.id).length;
 
-  const handleSelectCategory = (catId: string | null) => {
-    setSelectedCategoryId(catId);
-    scrollToSection("productos");
-  };
+    return (
+      <div className="w-full min-h-screen bg-[#FAF6EE] text-[#2C1810] animate-fadeIn pb-20">
+        {/* BARRA SUPERIOR DE NAVEGACIÓN Y REGRESO */}
+        <div className="sticky top-[58px] z-30 bg-[#FAF6EE]/95 backdrop-blur-md border-b border-[#E8DFC8] py-3.5 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+            {/* BOTÓN VOLVER A CATEGORÍAS */}
+            <button
+              onClick={handleBackToHome}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-white border border-[#DFD3BD] hover:border-terracota-500 hover:text-terracota-900 text-stone-800 text-xs sm:text-sm font-bold shadow-xs hover:shadow-sm transition-all active:scale-95 cursor-pointer"
+            >
+              <ArrowLeft className="h-4 w-4 text-terracota-700" />
+              <span>Volver a Categorías</span>
+            </button>
 
-  const currentCategoryName = useMemo(() => {
-    if (!selectedCategoryId) return null;
-    const cat = categorias.find((c) => c.id === selectedCategoryId);
-    return cat ? cat.nombre : null;
-  }, [selectedCategoryId, categorias]);
+            {/* BREADCRUMB / TÍTULO RÁPIDO */}
+            <div className="hidden sm:flex items-center gap-2 text-xs font-semibold text-stone-600">
+              <button
+                onClick={handleBackToHome}
+                className="hover:text-terracota-700 transition-colors"
+              >
+                Portada
+              </button>
+              <span>/</span>
+              <span className="text-terracota-900 font-bold">{selectedCategory.nombre}</span>
+            </div>
 
+            {/* BOTÓN DE CANASTA RÁPIDO */}
+            <button
+              onClick={() => setIsCartOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-terracota-700 hover:bg-terracota-800 text-white text-xs font-bold shadow-xs active:scale-95 transition-all"
+            >
+              <ShoppingBag className="h-4 w-4" />
+              <span>Mi Pedido ({totalCount})</span>
+            </button>
+          </div>
+        </div>
+
+        {/* HERO / HEADER DE LA CATEGORÍA */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 pb-6">
+          <div className="relative rounded-3xl border border-[#DFD3BD] bg-gradient-to-br from-[#FFFDF9] via-[#FAF6EE] to-[#F5EFE0] p-6 sm:p-10 shadow-sm overflow-hidden flex flex-col md:flex-row items-center gap-6 sm:gap-10">
+            {/* FOTO CIRCULAR PROTAGONISTA DE LA CATEGORÍA */}
+            <div className="relative h-32 w-32 sm:h-44 sm:w-44 md:h-48 md:w-48 rounded-full overflow-hidden border-4 border-amber-400 ring-4 ring-amber-300/40 shadow-xl flex-shrink-0 bg-crema-200">
+              <Image
+                src={catImage}
+                alt={selectedCategory.nombre}
+                fill
+                className="object-cover"
+                sizes="(max-width: 640px) 128px, 192px"
+                priority
+              />
+            </div>
+
+            {/* INFORMACIÓN Y DESCRIPCIÓN ARTESANAL */}
+            <div className="flex-1 text-center md:text-left">
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-oliva-100 text-oliva-800 border border-oliva-300 px-3 py-0.5 text-[11px] font-bold uppercase tracking-wider mb-2">
+                <Award className="h-3.5 w-3.5 text-oliva-700" />
+                <span>Segmento de Fábrica</span>
+              </div>
+              <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl font-black text-terracota-950 leading-tight">
+                {selectedCategory.nombre}
+              </h1>
+              <p className="mt-3 text-sm sm:text-base text-stone-700 leading-relaxed font-sans max-w-2xl">
+                {selectedCategory.descripcion ||
+                  "Elaboradas artesanalmente con 100% sémola de trigo candeal seleccionada y huevos de granja frescos."}
+              </p>
+
+              {/* BADGES TÉCNICOS */}
+              <div className="mt-4 flex flex-wrap items-center justify-center md:justify-start gap-2.5 sm:gap-3 text-xs font-semibold">
+                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-100 text-amber-950 border border-amber-300">
+                  <Sparkles className="h-3.5 w-3.5 text-amber-600" />
+                  <span>{totalVariedades} variedades disponibles</span>
+                </span>
+                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white text-stone-800 border border-stone-200">
+                  <Snowflake className="h-3.5 w-3.5 text-blue-500" />
+                  <span>72h heladera / 90d freezer</span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* BARRA DE BÚSQUEDA Y FILTRO DENTRO DE LA CATEGORÍA */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            {/* BUSCADOR */}
+            <div className="relative w-full sm:w-80">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-700 pointer-events-none" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={`Buscar en ${selectedCategory.nombre}...`}
+                className="w-full pl-10 pr-9 py-2.5 rounded-2xl bg-white border border-[#DFD3BD] focus:border-terracota-500 focus:outline-none focus:ring-2 focus:ring-terracota-200 text-xs sm:text-sm text-stone-900 placeholder:text-stone-700 transition-all shadow-xs"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-700 hover:text-stone-700 p-0.5"
+                  title="Limpiar búsqueda"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+
+            {/* MODO ANFITRIÓN (PORCIONES) */}
+            <div className="flex items-center gap-2 self-start sm:self-auto overflow-x-auto no-scrollbar py-1">
+              <span className="text-xs font-bold text-stone-700 flex-shrink-0 flex items-center gap-1">
+                <Users className="h-3.5 w-3.5 text-terracota-600" />
+                <span>Porciones:</span>
+              </span>
+              {[2, 4, 6, 8].map((comensales) => (
+                <button
+                  key={comensales}
+                  onClick={() =>
+                    setComensalesTarget(comensalesTarget === comensales ? null : comensales)
+                  }
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex-shrink-0 ${
+                    comensalesTarget === comensales
+                      ? "bg-[#2C1810] text-amber-200 border-2 border-amber-400 shadow-sm"
+                      : "bg-white text-stone-700 border border-stone-200 hover:border-amber-400"
+                  }`}
+                >
+                  {comensales} p.
+                </button>
+              ))}
+              {comensalesTarget && (
+                <button
+                  onClick={() => setComensalesTarget(null)}
+                  className="text-[11px] font-bold text-terracota-700 underline uppercase tracking-wider ml-1 flex-shrink-0"
+                >
+                  Ver todo
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* GRILLA COMPLETA DE PRODUCTOS DE ESTA CATEGORÍA */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          {categoryProducts.length === 0 ? (
+            <div className="text-center py-16 bg-white rounded-3xl border border-[#DFD3BD] p-8 max-w-md mx-auto">
+              <ShoppingBag className="h-12 w-12 text-stone-700 mx-auto mb-3" />
+              <h3 className="font-serif text-xl font-bold text-stone-800">
+                No se encontraron variedades
+              </h3>
+              <p className="text-xs text-stone-700 mt-1">
+                Probá borrando el término de búsqueda o cambiando el filtro de porciones.
+              </p>
+              <button
+                onClick={() => {
+                  setSearchQuery("");
+                  setComensalesTarget(null);
+                }}
+                className="mt-4 px-5 py-2.5 rounded-xl bg-terracota-700 text-white text-xs font-bold hover:bg-terracota-800 transition-colors"
+              >
+                Mostrar todas las variedades
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {categoryProducts.map((prod) => {
+                const isAdded = addedId === prod.id;
+                const rinde = prod.rinde_porciones || 2;
+                const coccion = prod.tiempo_coccion_minutos || 4;
+                const sugerenciaComplemento = getComplementoSugerido(
+                  selectedCategory.id,
+                  prod.nombre
+                );
+
+                return (
+                  <div
+                    key={prod.id}
+                    className="rounded-3xl bg-white border border-[#E8DFC8] shadow-sm hover:shadow-xl hover:border-terracota-400 transition-all duration-300 overflow-hidden flex flex-col justify-between group"
+                  >
+                    {/* FOTO VERTICAL REAL (DINÁMICA DESDE ADMIN) */}
+                    <div className="relative h-56 sm:h-64 w-full overflow-hidden bg-stone-100 flex-shrink-0">
+                      <Image
+                        src={
+                          prod.imagen_url ||
+                          "https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=800&q=80"
+                        }
+                        alt={prod.nombre}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                      />
+
+                      {/* BADGE DE PORCIONES */}
+                      <span className="absolute top-3 right-3 rounded-full bg-white/95 text-stone-800 border border-stone-200 px-2.5 py-1 text-[10px] font-bold shadow-xs flex items-center gap-1 backdrop-blur-xs">
+                        <Users className="h-3 w-3 text-terracota-600" />
+                        <span>Rinde {rinde} porc.</span>
+                      </span>
+
+                      {/* BADGE DE COCCIÓN RÁPIDA */}
+                      <span className="absolute bottom-3 left-3 rounded-full bg-[#2C1810]/90 text-amber-200 border border-amber-400/50 px-2.5 py-1 text-[10px] font-extrabold flex items-center gap-1 backdrop-blur-xs">
+                        <Clock className="h-3 w-3 text-amber-400" />
+                        <span>{coccion} min cocción</span>
+                      </span>
+                    </div>
+
+                    {/* CUERPO DE LA TARJETA */}
+                    <div className="p-5 flex-1 flex flex-col justify-between">
+                      <div>
+                        <h3 className="font-serif text-lg font-black text-stone-900 group-hover:text-terracota-800 transition-colors leading-snug">
+                          {prod.nombre}
+                        </h3>
+
+                        {/* DESCRIPCIÓN DE INGREDIENTES */}
+                        <p className="text-xs text-stone-700 line-clamp-2 mt-2 leading-relaxed">
+                          {prod.ingredientes ||
+                            "Elaborado con 100% sémola candeal pura y huevos de granja."}
+                        </p>
+
+                        {/* COMPLEMENTO / SUGERENCIA DE MARIDAJE DESTACADA */}
+                        <div className="mt-3 p-2.5 rounded-xl bg-amber-50/80 border border-amber-200/80 text-[11px] text-amber-950 leading-snug">
+                          <span className="font-bold block text-amber-900 mb-0.5">
+                            Maridaje & Sugerencia:
+                          </span>
+                          <span className="text-stone-700">{sugerenciaComplemento}</span>
+                        </div>
+                      </div>
+
+                      {/* PRECIO Y BOTÓN DE COMPRA */}
+                      <div className="mt-5 pt-3.5 border-t border-stone-100 flex items-center justify-between gap-3">
+                        <div>
+                          <span className="text-[10px] uppercase tracking-wider text-stone-700 block font-bold">
+                            Precio de fábrica
+                          </span>
+                          <div className="flex items-baseline gap-1">
+                            <span className="font-serif text-2xl font-black text-terracota-900">
+                              $ {prod.precio.toLocaleString("es-AR")}
+                            </span>
+                          </div>
+                          <span className="text-[10px] text-stone-700 block">
+                            / {prod.unidad_medida || "caja"}
+                          </span>
+                        </div>
+
+                        {/* BOTÓN "AGREGAR" CON FEEDBACK VISUAL INMEDIATO */}
+                        <button
+                          onClick={() => handleAddToCart(prod)}
+                          className={`px-4 sm:px-5 py-2.5 rounded-2xl font-bold text-xs sm:text-sm flex items-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer ${
+                            isAdded
+                              ? "bg-emerald-600 text-white ring-2 ring-emerald-300 scale-105"
+                              : "bg-terracota-700 hover:bg-terracota-800 text-white hover:shadow-md"
+                          }`}
+                        >
+                          {isAdded ? (
+                            <>
+                              <Check className="h-4 w-4" />
+                              <span>¡Listo!</span>
+                            </>
+                          ) : (
+                            <>
+                              <ShoppingBag className="h-4 w-4" />
+                              <span>Agregar</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* CAMBIADOR RÁPIDO A OTRAS CATEGORÍAS */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-6 border-t border-[#E8DFC8] mt-12">
+          <div className="text-center mb-6">
+            <span className="text-xs font-bold uppercase tracking-wider text-terracota-800">
+              Explorar otras categorías de fábrica
+            </span>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3">
+            {categorias.map((cat) => {
+              const isCurrent = cat.id === selectedCategory.id;
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => handleOpenCategory(cat.id)}
+                  className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all shadow-xs cursor-pointer ${
+                    isCurrent
+                      ? "bg-terracota-700 text-white border-2 border-amber-300 shadow-sm"
+                      : "bg-white text-stone-700 hover:text-terracota-900 border border-[#DFD3BD] hover:border-terracota-400"
+                  }`}
+                >
+                  {cat.nombre}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="mt-8 text-center">
+            <button
+              onClick={handleBackToHome}
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-white border border-[#DFD3BD] hover:border-terracota-500 text-terracota-900 text-xs sm:text-sm font-bold shadow-sm hover:shadow-md transition-all active:scale-95 cursor-pointer"
+            >
+              <ArrowLeft className="h-4 w-4 text-terracota-700" />
+              <span>Volver a la Portada de Categorías</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ==============================================================================
+  // VISTA A: PORTADA PRINCIPAL LIMPIA Y ENFOCADA (HERO + CÍRCULOS DE CATEGORÍA)
+  // (Sin grilla redundante de productos para una experiencia directa y elegante)
+  // ==============================================================================
   return (
     <div className="w-full">
-      {/* ============================================================== */}
       {/* 1. HERO BANNER PRINCIPAL (EDITORIAL FULL-WIDTH) */}
-      {/* ============================================================== */}
       <section
         id="inicio"
         className="relative min-h-[580px] sm:min-h-[640px] flex items-center justify-center overflow-hidden bg-stone-950 text-white"
@@ -233,7 +585,7 @@ export function BookCatalog({
           {/* BOTONES DE LLAMADA A LA ACCIÓN (CTA) */}
           <div className="mt-8 flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
             <button
-              onClick={() => scrollToSection("nuestras-pastas")}
+              onClick={scrollToCategories}
               className="w-full sm:w-auto inline-flex items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-terracota-600 via-terracota-700 to-[#5A2B1D] text-white px-8 py-4 text-sm sm:text-base font-black tracking-wide shadow-xl hover:shadow-terracota-600/40 hover:scale-105 transition-all border-2 border-amber-400 active:scale-95 cursor-pointer"
             >
               <span>VER PRODUCTOS</span>
@@ -271,9 +623,7 @@ export function BookCatalog({
         </div>
       </section>
 
-      {/* ============================================================== */}
-      {/* 2. SECCIÓN "NUESTRAS PASTAS" (GRID CIRCULAR DE CATEGORÍAS) */}
-      {/* ============================================================== */}
+      {/* 2. SECCIÓN "NUESTRAS PASTAS" (GRID CIRCULAR DE CATEGORÍAS TOTALMENTE INTERACTIVO) */}
       <section
         id="nuestras-pastas"
         className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
@@ -287,32 +637,26 @@ export function BookCatalog({
             Nuestras Pastas
           </h2>
           <p className="mt-3 font-serif italic text-base sm:text-lg text-terracota-800/90 max-w-xl mx-auto">
-            Recetas clásicas, con el amor de siempre.
+            Recetas clásicas, con el amor de siempre. Elegí una categoría para explorar todas sus
+            variedades.
           </p>
           <div className="h-1 w-16 bg-amber-400 mx-auto mt-4 rounded-full" />
         </div>
 
-        {/* GRILLA DE TARJETAS CIRCULARES (EDITABLES DESDE ADMIN) */}
+        {/* GRILLA DE CÍRCULOS DE CATEGORÍA INTERACTIVOS */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 sm:gap-8 max-w-6xl mx-auto">
           {categorias.map((cat) => {
-            const isSelected = selectedCategoryId === cat.id;
             const catImage = getCategoryImageUrl(cat, productos);
             const countProds = productos.filter((p) => p.categoria_id === cat.id).length;
 
             return (
               <button
                 key={cat.id}
-                onClick={() => handleSelectCategory(cat.id)}
-                className="group flex flex-col items-center text-center p-3 sm:p-4 rounded-3xl transition-all hover:bg-white hover:shadow-md cursor-pointer"
+                onClick={() => handleOpenCategory(cat.id)}
+                className="group flex flex-col items-center text-center p-3 sm:p-4 rounded-3xl transition-all hover:bg-white hover:shadow-md cursor-pointer active:scale-95"
               >
                 {/* CONTENEDOR CIRCULAR DE LA FOTO (ALTA COCINA) */}
-                <div
-                  className={`relative h-28 w-28 sm:h-36 sm:w-36 md:h-40 md:w-40 rounded-full mx-auto overflow-hidden bg-crema-200 shadow-md transition-all duration-300 group-hover:scale-105 ${
-                    isSelected
-                      ? "border-4 border-amber-400 ring-4 ring-amber-300/60 shadow-xl scale-105"
-                      : "border-3 border-[#DFD3BD] group-hover:border-terracota-500"
-                  }`}
-                >
+                <div className="relative h-28 w-28 sm:h-36 sm:w-36 md:h-40 md:w-40 rounded-full mx-auto overflow-hidden bg-crema-200 shadow-md transition-all duration-300 group-hover:scale-105 border-3 border-[#DFD3BD] group-hover:border-terracota-500 group-hover:shadow-xl">
                   <Image
                     src={catImage}
                     alt={cat.nombre}
@@ -320,18 +664,17 @@ export function BookCatalog({
                     className="object-cover group-hover:scale-110 transition-transform duration-500"
                     sizes="(max-width: 640px) 112px, (max-width: 768px) 144px, 160px"
                   />
-                  {/* Gradiente sutil para contraste */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-stone-900/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  {/* OVERLAY SUTIL CON TEXTO AL HOVER */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-stone-900/60 via-stone-900/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-3">
+                    <span className="text-[11px] font-bold text-amber-200 uppercase tracking-wider flex items-center gap-1">
+                      <span>Ver carta</span>
+                      <ArrowRight className="h-3 w-3" />
+                    </span>
+                  </div>
                 </div>
 
                 {/* TÍTULO DE LA CATEGORÍA */}
-                <span
-                  className={`font-serif font-black text-sm sm:text-base md:text-lg mt-3.5 leading-snug transition-colors ${
-                    isSelected
-                      ? "text-terracota-700 underline decoration-amber-400 underline-offset-4"
-                      : "text-stone-900 group-hover:text-terracota-800"
-                  }`}
-                >
+                <span className="font-serif font-black text-sm sm:text-base md:text-lg mt-3.5 leading-snug transition-colors text-stone-900 group-hover:text-terracota-800">
                   {cat.nombre}
                 </span>
 
@@ -343,271 +686,9 @@ export function BookCatalog({
             );
           })}
         </div>
-
-        {/* BOTÓN PARA RESTABLECER / VER TODAS */}
-        {selectedCategoryId && (
-          <div className="mt-8 text-center animate-fadeIn">
-            <button
-              onClick={() => setSelectedCategoryId(null)}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white border border-[#DFD3BD] hover:border-terracota-400 text-stone-700 hover:text-terracota-900 text-xs font-bold shadow-xs hover:shadow-sm transition-all"
-            >
-              <RotateCcw className="h-3.5 w-3.5 text-terracota-600" />
-              <span>Ver todas las categorías</span>
-            </button>
-          </div>
-        )}
       </section>
 
-      {/* ============================================================== */}
-      {/* 3. SECCIÓN "PRODUCTOS DESTACADOS" (GRILLA DE TARJETAS VERTICALES) */}
-      {/* ============================================================== */}
-      <section
-        id="productos"
-        className="py-14 sm:py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-[#E8DFC8]"
-      >
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
-          <div>
-            <h3 className="font-serif text-2xl sm:text-3xl md:text-4xl font-black text-[#2C1810]">
-              {currentCategoryName ? currentCategoryName : "Productos Destacados"}
-            </h3>
-            <p className="text-xs sm:text-sm text-stone-700 mt-1">
-              {filteredProducts.length}{" "}
-              {filteredProducts.length === 1 ? "producto disponible" : "productos disponibles"} para
-              encargar en la tanda fresca.
-            </p>
-          </div>
-
-          {/* BARRA DE BÚSQUEDA INSTANTÁNEA */}
-          <div className="relative w-full md:w-80">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-700 pointer-events-none" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Buscar por nombre o relleno..."
-              className="w-full pl-10 pr-9 py-2.5 rounded-2xl bg-white border border-[#DFD3BD] focus:border-terracota-500 focus:outline-none focus:ring-2 focus:ring-terracota-200 text-xs sm:text-sm text-stone-900 placeholder:text-stone-700 transition-all shadow-xs"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-700 hover:text-stone-700 p-0.5"
-                title="Limpiar búsqueda"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* PÍLDORAS DE FILTRADO RÁPIDO DE CATEGORÍAS (FLEX-WRAP SIN RECORTES) */}
-        <div className="flex flex-wrap items-center justify-start sm:justify-center gap-2 sm:gap-2.5 mb-8">
-          <button
-            onClick={() => setSelectedCategoryId(null)}
-            className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all shadow-xs cursor-pointer ${
-              selectedCategoryId === null
-                ? "bg-terracota-700 text-white border-2 border-amber-300 shadow-sm"
-                : "bg-white text-stone-700 hover:text-terracota-900 border border-[#DFD3BD] hover:border-terracota-400"
-            }`}
-          >
-            Todas las pastas ({productos.length})
-          </button>
-
-          {categorias.map((cat) => {
-            const isCatActive = selectedCategoryId === cat.id;
-            const count = productos.filter((p) => p.categoria_id === cat.id).length;
-
-            return (
-              <button
-                key={cat.id}
-                onClick={() => setSelectedCategoryId(cat.id)}
-                className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all shadow-xs cursor-pointer ${
-                  isCatActive
-                    ? "bg-terracota-700 text-white border-2 border-amber-300 shadow-sm"
-                    : "bg-white text-stone-700 hover:text-terracota-900 border border-[#DFD3BD] hover:border-terracota-400"
-                }`}
-              >
-                {cat.nombre} ({count})
-              </button>
-            );
-          })}
-        </div>
-
-        {/* CALCULADOR DE COMENSALES (MODO ANFITRIÓN) */}
-        <div className="mb-8 rounded-2xl border border-amber-300 bg-amber-50/70 p-4 sm:p-5 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3 text-center sm:text-left">
-            <div className="h-10 w-10 rounded-xl bg-amber-200 border border-amber-400 flex items-center justify-center flex-shrink-0 text-amber-900">
-              <Users className="h-5 w-5" />
-            </div>
-            <div>
-              <span className="font-bold text-xs sm:text-sm text-[#2C1810] block">
-                Calculador de Porciones de Fábrica:
-              </span>
-              <span className="text-[11px] sm:text-xs text-stone-700 block">
-                ¿Para cuántas personas vas a cocinar? Te sugerimos cajas para que rindan exactas.
-              </span>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            {[2, 4, 6, 8].map((comensales) => (
-              <button
-                key={comensales}
-                onClick={() =>
-                  setComensalesTarget(comensalesTarget === comensales ? null : comensales)
-                }
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                  comensalesTarget === comensales
-                    ? "bg-[#2C1810] text-amber-200 border-2 border-amber-400 shadow-sm"
-                    : "bg-white text-stone-700 border border-amber-200 hover:border-amber-400"
-                }`}
-              >
-                {comensales} personas
-              </button>
-            ))}
-            {comensalesTarget && (
-              <button
-                onClick={() => setComensalesTarget(null)}
-                className="text-[11px] font-bold text-terracota-700 underline uppercase tracking-wider ml-1"
-              >
-                Limpiar
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* GRILLA DE TARJETAS DE PRODUCTO */}
-        {filteredProducts.length === 0 ? (
-          <div className="text-center py-16 bg-white rounded-3xl border border-[#DFD3BD] p-8 max-w-xl mx-auto">
-            <ShoppingBag className="h-12 w-12 text-stone-700 mx-auto mb-3" />
-            <h4 className="font-serif text-xl font-bold text-stone-800">
-              No se encontraron productos
-            </h4>
-            <p className="text-xs sm:text-sm text-stone-700 mt-1">
-              Probá borrando el texto de búsqueda o seleccionando otra categoría.
-            </p>
-            <button
-              onClick={() => {
-                setSearchQuery("");
-                setSelectedCategoryId(null);
-                setComensalesTarget(null);
-              }}
-              className="mt-4 px-5 py-2.5 rounded-xl bg-terracota-700 text-white text-xs font-bold hover:bg-terracota-800 transition-colors"
-            >
-              Ver todo el catálogo
-            </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredProducts.map((prod) => {
-              const isAdded = addedId === prod.id;
-              const rinde = prod.rinde_porciones || 2;
-              const coccion = prod.tiempo_coccion_minutos || 4;
-
-              return (
-                <div
-                  key={prod.id}
-                  className="rounded-3xl bg-white border border-[#E8DFC8] shadow-sm hover:shadow-xl hover:border-terracota-400 transition-all duration-300 overflow-hidden flex flex-col justify-between group"
-                >
-                  {/* IMAGEN VERTICAL DEL PRODUCTO (EDITABLE DESDE ADMIN) */}
-                  <div className="relative h-56 sm:h-60 w-full overflow-hidden bg-stone-100 flex-shrink-0">
-                    <Image
-                      src={
-                        prod.imagen_url ||
-                        "https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=800&q=80"
-                      }
-                      alt={prod.nombre}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-500"
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                    />
-
-                    {/* BADGE DE CATEGORÍA */}
-                    <span className="absolute top-3 left-3 rounded-full bg-[#2C1810]/90 text-amber-200 border border-amber-400/50 px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider backdrop-blur-xs">
-                      {prod.categoria_nombre}
-                    </span>
-
-                    {/* BADGE DE PORCIONES */}
-                    <span className="absolute top-3 right-3 rounded-full bg-white/95 text-stone-800 border border-stone-200 px-2.5 py-1 text-[10px] font-bold shadow-xs flex items-center gap-1 backdrop-blur-xs">
-                      <Users className="h-3 w-3 text-terracota-600" />
-                      <span>Rinde {rinde} porc.</span>
-                    </span>
-                  </div>
-
-                  {/* CUERPO DE LA TARJETA */}
-                  <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between">
-                    <div>
-                      <h4 className="font-serif text-lg font-black text-stone-900 group-hover:text-terracota-800 transition-colors leading-snug">
-                        {prod.nombre}
-                      </h4>
-
-                      {/* INGREDIENTES / DESCRIPCIÓN */}
-                      <p className="text-xs text-stone-700 line-clamp-2 mt-1.5 leading-relaxed">
-                        {prod.ingredientes ||
-                          "Elaborado con 100% sémola candeal pura y huevos de granja."}
-                      </p>
-
-                      {/* INDICADORES DE FÁBRICA */}
-                      <div className="mt-3 pt-3 border-t border-stone-100 flex items-center justify-between text-[11px] text-stone-700 font-medium">
-                        <span className="inline-flex items-center gap-1">
-                          <Clock className="h-3.5 w-3.5 text-amber-600" />
-                          <span>{coccion} min cocción</span>
-                        </span>
-                        <span className="inline-flex items-center gap-1">
-                          <Snowflake className="h-3.5 w-3.5 text-blue-500" />
-                          <span>72h / 90d</span>
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* PRECIO Y BOTÓN DE COMPRA DIRECTO */}
-                    <div className="mt-4 pt-3 border-t border-stone-100 flex items-center justify-between gap-3">
-                      <div>
-                        <span className="text-[10px] uppercase tracking-wider text-stone-700 block font-bold">
-                          Precio de fábrica
-                        </span>
-                        <div className="flex items-baseline gap-1">
-                          <span className="font-serif text-xl sm:text-2xl font-black text-terracota-900">
-                            $ {prod.precio.toLocaleString("es-AR")}
-                          </span>
-                        </div>
-                        <span className="text-[10px] text-stone-700 block">
-                          / {prod.unidad_medida || "porción"}
-                        </span>
-                      </div>
-
-                      {/* BOTÓN "AGREGAR" CON RESPUESTA VISUAL INMEDIATA */}
-                      <button
-                        onClick={() => handleAddToCart(prod)}
-                        className={`px-4 sm:px-5 py-2.5 rounded-2xl font-bold text-xs sm:text-sm flex items-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer ${
-                          isAdded
-                            ? "bg-emerald-600 text-white ring-2 ring-emerald-300 scale-105"
-                            : "bg-terracota-700 hover:bg-terracota-800 text-white hover:shadow-md"
-                        }`}
-                      >
-                        {isAdded ? (
-                          <>
-                            <Check className="h-4 w-4" />
-                            <span>¡Listo!</span>
-                          </>
-                        ) : (
-                          <>
-                            <ShoppingBag className="h-4 w-4" />
-                            <span>Agregar</span>
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </section>
-
-      {/* ============================================================== */}
-      {/* 4. BANDA DE VALORES ARTESANALES (4 PILARES INSTITUCIONALES) */}
-      {/* ============================================================== */}
+      {/* 3. BANDA DE VALORES ARTESANALES (4 PILARES INSTITUCIONALES) */}
       <section className="bg-gradient-to-b from-[#FAF6EE] to-[#F4ECE0] py-16 px-4 sm:px-6 lg:px-8 border-t border-b border-[#E8DFC8]">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-10">
@@ -688,9 +769,7 @@ export function BookCatalog({
         </div>
       </section>
 
-      {/* ============================================================== */}
-      {/* 5. SECCIÓN "NOSOTROS / HISTORIA DE LA FÁBRICA" */}
-      {/* ============================================================== */}
+      {/* 4. SECCIÓN "NOSOTROS / HISTORIA DE LA FÁBRICA" */}
       <section id="nosotros" className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="rounded-3xl bg-white border border-[#DFD3BD] p-6 sm:p-10 lg:p-12 shadow-sm flex flex-col lg:flex-row items-center gap-10">
           {/* FOTO HISTORIA / AMASADO */}
