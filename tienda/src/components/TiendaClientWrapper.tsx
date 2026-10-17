@@ -76,7 +76,7 @@ export function TiendaClientWrapper({
       <QRModal isOpen={showQR} onClose={() => setShowQR(false)} />
 
       {/* 5. DRAWER LATERAL DEL CARRITO & CHECKOUT */}
-      <CartDrawer config={config} />
+      <CartDrawer config={config} productos={productos} />
 
       {/* 6. BOTÓN FLOTANTE PERMANENTE DE WHATSAPP */}
       <FloatingWhatsAppButton config={config} />

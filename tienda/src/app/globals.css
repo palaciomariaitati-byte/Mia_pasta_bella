@@ -6,69 +6,145 @@
   body {
     background-color: #FAF6EE;
     color: #2E1810;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: var(--font-plus-jakarta), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
-    background-image: radial-gradient(#8C4F37 0.6px, transparent 0.6px), radial-gradient(#556747 0.6px, #FAF6EE 0.6px);
+    background-image: 
+      radial-gradient(#8C4F37 0.65px, transparent 0.65px),
+      radial-gradient(#556747 0.65px, #FAF6EE 0.65px);
     background-size: 24px 24px;
     background-position: 0 0, 12px 12px;
-    background-opacity: 0.03;
+    background-opacity: 0.04;
   }
 
-  h1, h2, h3, h4, h5, h6 {
-    font-family: "Playfair Display", Georgia, Cambria, serif;
+  h1, h2, h3, h4, h5, h6, .font-serif {
+    font-family: var(--font-playfair), "Playfair Display", Georgia, Cambria, serif;
     letter-spacing: -0.015em;
   }
 }
 
 @layer components {
+  /* ============================================================== */
+  /* ENCUADERNACIÓN EDITORIAL: SIMULACIÓN DE TAPA DURA Y HOJAS APILADAS */
+  /* ============================================================== */
+  .book-cover-shell {
+    position: relative;
+    background: linear-gradient(160deg, #FDFBF7 0%, #F8F2E4 50%, #F4ECE0 100%);
+    border: 1px solid #DFD3BD;
+    border-radius: 2rem;
+    /* Efecto de hojas apiladas artesanalmente con profundidad */
+    box-shadow: 
+      0 25px 60px -15px rgba(46, 24, 16, 0.18),
+      0 10px 25px -8px rgba(46, 24, 16, 0.10),
+      0 0 0 1px rgba(140, 79, 55, 0.08),
+      -4px 4px 0px 0px #EFE7D8,
+      -8px 8px 0px 0px #DFD3BD,
+      -12px 12px 1px 0px #C9BA9F;
+  }
+
+  /* Sombra del lomo central (simulación pliego doble de libro en pantallas grandes) */
+  .book-spine-shadow {
+    position: relative;
+  }
+  @media (min-width: 1024px) {
+    .book-spine-shadow::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 48px;
+      transform: translateX(-50%);
+      background: linear-gradient(90deg, 
+        transparent 0%, 
+        rgba(46, 24, 16, 0.04) 25%, 
+        rgba(46, 24, 16, 0.08) 50%, 
+        rgba(46, 24, 16, 0.04) 75%, 
+        transparent 100%
+      );
+      pointer-events: none;
+      z-index: 5;
+    }
+  }
+
   /* Botón Terracota de Autor */
   .btn-boutique {
-    @apply inline-flex items-center justify-center px-6 py-3 rounded-full font-bold transition-all duration-300 shadow-md active:scale-95;
+    @apply inline-flex items-center justify-center px-6 py-3.5 rounded-full font-bold transition-all duration-300 shadow-md active:scale-95;
     background: linear-gradient(135deg, #8C4F37 0%, #703D2A 100%);
     color: #FFFDF9;
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.2);
   }
   .btn-boutique:hover {
     background: linear-gradient(135deg, #703D2A 0%, #522718 100%);
-    box-shadow: 0 10px 25px -4px rgba(140, 79, 55, 0.35);
+    box-shadow: 0 10px 25px -4px rgba(140, 79, 55, 0.4);
   }
 
   /* Botón Verde Oliva Orgánico */
   .btn-oliva {
-    @apply inline-flex items-center justify-center px-6 py-3 rounded-full font-bold transition-all duration-300 shadow-md active:scale-95;
+    @apply inline-flex items-center justify-center px-6 py-3.5 rounded-full font-bold transition-all duration-300 shadow-md active:scale-95;
     background: linear-gradient(135deg, #6B805B 0%, #4D5E3F 100%);
     color: #FFFDF9;
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.2);
   }
   .btn-oliva:hover {
     background: linear-gradient(135deg, #556747 0%, #3B4830 100%);
-    box-shadow: 0 10px 25px -4px rgba(85, 103, 71, 0.35);
+    box-shadow: 0 10px 25px -4px rgba(85, 103, 71, 0.4);
   }
 
-  /* Hoja de Libro Artesanal con textura sutil y sombras ricas */
-  .book-page-container {
-    background: linear-gradient(145deg, #FFFDF8 0%, #F9F4E8 100%);
-    border: 2px solid #E6D8C3;
-    box-shadow: 0 25px 50px -12px rgba(66, 32, 17, 0.15), 0 0 0 1px rgba(140, 79, 55, 0.05);
-  }
-
-  .filigrana-borde {
-    border: 1px dashed #D4C3A3;
+  /* Filigrana dorada para separadores */
+  .filigrana-dorada {
+    border-image: linear-gradient(to right, transparent, #D4AF37, transparent) 1;
   }
 }
 
-/* Animación sutil de pase de página */
-@keyframes pageFlip {
+/* ============================================================== */
+/* PERSPECTIVA 3D Y ANIMACIONES FLUIDAS DE PASO DE PÁGINA */
+/* ============================================================== */
+.perspective-book {
+  perspective: 1600px;
+  transform-style: preserve-3d;
+}
+
+@keyframes pageFlipNext {
   0% {
     opacity: 0.4;
-    transform: rotateY(-3deg) scale(0.99);
+    transform: rotateY(-8deg) translateX(12px) scale(0.985);
+  }
+  60% {
+    opacity: 0.95;
   }
   100% {
     opacity: 1;
-    transform: rotateY(0deg) scale(1);
+    transform: rotateY(0deg) translateX(0) scale(1);
   }
 }
 
-.animate-page-flip {
-  animation: pageFlip 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+@keyframes pageFlipPrev {
+  0% {
+    opacity: 0.4;
+    transform: rotateY(8deg) translateX(-12px) scale(0.985);
+  }
+  60% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 1;
+    transform: rotateY(0deg) translateX(0) scale(1);
+  }
+}
+
+.animate-page-next {
+  animation: pageFlipNext 0.42s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-page-prev {
+  animation: pageFlipPrev 0.42s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Utilidad limpia para ocultar scrollbars sin recortar sombras */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
