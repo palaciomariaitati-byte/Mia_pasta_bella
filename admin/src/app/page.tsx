@@ -19,6 +19,11 @@ import {
   DollarSign,
   Printer,
   Sparkles,
+  QrCode,
+  Sliders,
+  Calculator,
+  Truck,
+  BookOpen,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -31,7 +36,7 @@ export default async function AdminDashboardPage() {
     getClientes(),
   ]);
 
-  // 1. KPI: Ventas Totales ($ ARS) de pedidos no cancelados
+  // 1. KPI: Total de Ventas Confirmadas ($ ARS) de pedidos no cancelados
   const pedidosValidos = pedidos.filter((p) => p.estado !== "cancelada");
   const ventasTotales = pedidosValidos.reduce((sum, p) => sum + p.total, 0);
 
@@ -43,7 +48,7 @@ export default async function AdminDashboardPage() {
       p.estado === "en_preparacion"
   );
 
-  // 3. KPI: Total de Porciones Encargadas en pedidos activos
+  // 3. KPI: Total de Porciones Encargadas en tandas activas
   const totalPorcionesEncargadas = pedidosPendientesAmasado.reduce(
     (sum, p) =>
       sum +
@@ -62,7 +67,7 @@ export default async function AdminDashboardPage() {
   // 4. KPI: Alertas de Stock Bajo (≤ 5 unidades)
   const productosStockBajo = productos.filter((p) => p.activo && p.stock <= 5);
 
-  // 5. KPI: Ranking de las Pastas Más Pedidas de Fábrica
+  // 5. Ranking de las Pastas Más Pedidas de Fábrica
   const statsMap = new Map<
     string,
     { nombre: string; unidades: number; porciones: number; ingresos: number }
@@ -134,7 +139,7 @@ export default async function AdminDashboardPage() {
       {/* 2. ALERTA DESTACADA: PEDIDOS PENDIENTES DE AMASADO */}
       {/* ============================================================== */}
       {pedidosPendientesAmasado.length > 0 && (
-        <div className="bg-gradient-to-r from-amber-100 via-amber-50 to-stone-50 border-2 border-amber-400 rounded-3xl p-5 sm:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm animate-pulse-subtle">
+        <div className="bg-gradient-to-r from-amber-100 via-amber-50 to-stone-50 border-2 border-amber-400 rounded-3xl p-5 sm:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm">
           <div className="flex items-center gap-4">
             <div className="p-3.5 bg-amber-800 text-amber-100 rounded-2xl shadow-md">
               <ChefHat className="h-7 w-7" />
@@ -158,7 +163,7 @@ export default async function AdminDashboardPage() {
               href="/pedidos"
               className="w-full md:w-auto text-center shrink-0 bg-amber-800 hover:bg-amber-900 text-white text-xs font-bold px-6 py-3 rounded-2xl shadow-md transition-all active:scale-95"
             >
-              Abrir Planilla de Amasado & Rótulos →
+              Abrir Totalizador de Amasado & Rótulos →
             </Link>
           </div>
         </div>
@@ -168,11 +173,11 @@ export default async function AdminDashboardPage() {
       {/* 3. KPIS PRINCIPALES DEL MODELO DE FÁBRICA */}
       {/* ============================================================== */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* KPI 1: VENTAS TOTALES */}
+        {/* KPI 1: VENTAS TOTALES CONFIRMADAS */}
         <div className="bg-white p-5 rounded-3xl border border-stone-200 shadow-sm flex flex-col justify-between hover:border-amber-400 transition-all">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-stone-400 uppercase tracking-wider">
-              Ventas Totales
+              Ventas Confirmadas
             </span>
             <div className="p-2.5 bg-emerald-50 text-emerald-700 rounded-xl">
               <DollarSign className="h-5 w-5" />
@@ -183,19 +188,19 @@ export default async function AdminDashboardPage() {
               ${ventasTotales.toLocaleString("es-AR")}
             </div>
             <p className="text-[11px] text-stone-500 font-semibold mt-1">
-              {pedidosValidos.length} pedidos registrados en app
+              {pedidosValidos.length} pedidos confirmados en app
             </p>
           </div>
         </div>
 
-        {/* KPI 2: PENDIENTES DE AMASADO */}
+        {/* KPI 2: PENDIENTES DE ELABORACIÓN */}
         <Link
           href="/pedidos"
-          className="bg-white p-5 rounded-3xl border border-stone-200 shadow-sm flex flex-col justify-between hover:border-amber-400 hover:shadow-md transition-all group"
+          className="bg-white p-5 rounded-3xl border border-stone-200 shadow-sm flex flex-col justify-between hover:border-amber-400 hover:shadow-md transition-all group cursor-pointer"
         >
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-stone-400 uppercase tracking-wider">
-              Pendientes Amasado
+              Pendientes de Elaboración
             </span>
             <div className="p-2.5 bg-amber-50 group-hover:bg-amber-100 text-amber-800 rounded-xl transition-colors">
               <ChefHat className="h-5 w-5" />
@@ -206,7 +211,7 @@ export default async function AdminDashboardPage() {
               {pedidosPendientesAmasado.length}
             </div>
             <p className="text-[11px] text-amber-700 font-semibold mt-1">
-              {totalBandejasAmasar} bandejas por envasar
+              {totalBandejasAmasar} cajas por armar
             </p>
           </div>
         </Link>
@@ -226,7 +231,7 @@ export default async function AdminDashboardPage() {
               {totalPorcionesEncargadas}
             </div>
             <p className="text-[11px] text-stone-500 font-semibold mt-1">
-              Rendimiento fresco activo
+              Rendimiento en tandas activas
             </p>
           </div>
         </div>
@@ -234,7 +239,7 @@ export default async function AdminDashboardPage() {
         {/* KPI 4: ALERTAS DE STOCK BAJO */}
         <Link
           href="/catalogo"
-          className={`p-5 rounded-3xl border shadow-sm flex flex-col justify-between transition-all group ${
+          className={`p-5 rounded-3xl border shadow-sm flex flex-col justify-between transition-all group cursor-pointer ${
             productosStockBajo.length > 0
               ? "bg-amber-50/70 border-amber-300 hover:border-amber-500"
               : "bg-white border-stone-200 hover:border-amber-400"
@@ -242,7 +247,7 @@ export default async function AdminDashboardPage() {
         >
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-stone-400">
-              Alertas Stock Bajo
+              Alertas de Stock
             </span>
             <div
               className={`p-2.5 rounded-xl ${
@@ -272,7 +277,114 @@ export default async function AdminDashboardPage() {
       </div>
 
       {/* ============================================================== */}
-      {/* 4. RANKING DE LAS PASTAS MÁS PEDIDAS & ALERTAS CRÍTICAS */}
+      {/* 4. PANEL DE ACCESOS DIRECTOS RÁPIDOS (GESTIÓN EJECUTIVA) */}
+      {/* ============================================================== */}
+      <div className="bg-stone-900 text-white rounded-3xl p-6 sm:p-7 shadow-lg border border-stone-800">
+        <div className="flex items-center justify-between border-b border-stone-800 pb-4 mb-5">
+          <div className="flex items-center gap-2.5">
+            <Sparkles className="h-5 w-5 text-amber-400" />
+            <h2 className="font-serif text-lg font-bold text-white">
+              Centro de Acceso Rápido & Operaciones
+            </h2>
+          </div>
+          <span className="text-xs font-bold text-amber-300 bg-amber-400/10 px-3 py-1 rounded-full border border-amber-400/20">
+            Fábrica Activa
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          {/* ACCESO 1: TOTALIZADOR DE AMASADO */}
+          <Link
+            href="/pedidos"
+            className="group p-4 rounded-2xl bg-stone-800/80 hover:bg-amber-900/60 border border-stone-700 hover:border-amber-400 transition-all flex flex-col justify-between"
+          >
+            <div>
+              <div className="h-10 w-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                <ChefHat className="h-5 w-5" />
+              </div>
+              <h3 className="font-bold text-sm text-white group-hover:text-amber-200 transition-colors">
+                Totalizador de Amasado
+              </h3>
+              <p className="text-xs text-stone-400 mt-1 leading-relaxed">
+                Calculadora de harina, sémola, huevos y rótulos de despacho para cocina.
+              </p>
+            </div>
+            <span className="text-xs font-bold text-amber-400 mt-4 flex items-center gap-1">
+              <span>Abrir Cocina</span>
+              <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
+            </span>
+          </Link>
+
+          {/* ACCESO 2: GESTIÓN DE CATÁLOGO & FOTOS */}
+          <Link
+            href="/catalogo"
+            className="group p-4 rounded-2xl bg-stone-800/80 hover:bg-amber-900/60 border border-stone-700 hover:border-amber-400 transition-all flex flex-col justify-between"
+          >
+            <div>
+              <div className="h-10 w-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                <Package className="h-5 w-5" />
+              </div>
+              <h3 className="font-bold text-sm text-white group-hover:text-amber-200 transition-colors">
+                Catálogo & Fotos Reales
+              </h3>
+              <p className="text-xs text-stone-400 mt-1 leading-relaxed">
+                Subida de fotos desde tu dispositivo, cambio de precios y stock de tanda.
+              </p>
+            </div>
+            <span className="text-xs font-bold text-amber-400 mt-4 flex items-center gap-1">
+              <span>Gestionar Catálogo</span>
+              <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
+            </span>
+          </Link>
+
+          {/* ACCESO 3: DESCARGA DE MENÚ QR */}
+          <Link
+            href="/qr"
+            className="group p-4 rounded-2xl bg-stone-800/80 hover:bg-amber-900/60 border border-stone-700 hover:border-amber-400 transition-all flex flex-col justify-between"
+          >
+            <div>
+              <div className="h-10 w-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                <QrCode className="h-5 w-5" />
+              </div>
+              <h3 className="font-bold text-sm text-white group-hover:text-amber-200 transition-colors">
+                Descarga de Menú QR
+              </h3>
+              <p className="text-xs text-stone-400 mt-1 leading-relaxed">
+                Descarga de código QR en alta resolución con logo para mostrador o folletos.
+              </p>
+            </div>
+            <span className="text-xs font-bold text-amber-400 mt-4 flex items-center gap-1">
+              <span>Generar y Descargar QR</span>
+              <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
+            </span>
+          </Link>
+
+          {/* ACCESO 4: GESTIÓN DE PEDIDOS & DESPACHO */}
+          <Link
+            href="/pedidos"
+            className="group p-4 rounded-2xl bg-stone-800/80 hover:bg-amber-900/60 border border-stone-700 hover:border-amber-400 transition-all flex flex-col justify-between"
+          >
+            <div>
+              <div className="h-10 w-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                <Truck className="h-5 w-5" />
+              </div>
+              <h3 className="font-bold text-sm text-white group-hover:text-amber-200 transition-colors">
+                Gestión de Pedidos & WhatsApp
+              </h3>
+              <p className="text-xs text-stone-400 mt-1 leading-relaxed">
+                Estados de pedidos, envíos por delivery, retiros en fábrica y mensajes de aviso.
+              </p>
+            </div>
+            <span className="text-xs font-bold text-amber-400 mt-4 flex items-center gap-1">
+              <span>Ver Pedidos</span>
+              <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
+            </span>
+          </Link>
+        </div>
+      </div>
+
+      {/* ============================================================== */}
+      {/* 5. RANKING DE LAS PASTAS MÁS PEDIDAS & CARD DE TANDA ACTIVA */}
       {/* ============================================================== */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* RANKING TOP 5 PASTAS (7 columnas) */}
@@ -371,7 +483,7 @@ export default async function AdminDashboardPage() {
             </div>
           </div>
 
-          {/* Card Rótulo y Etiquetas */}
+          {/* Card Rótulo y Etiquetas de Despacho */}
           <div className="bg-white p-5 rounded-3xl border border-stone-200 shadow-sm flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className="p-3 bg-amber-100 text-amber-900 rounded-2xl">

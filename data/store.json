@@ -112,7 +112,8 @@
       "fecha_elaboracion": "Elaboración fresca de la tanda",
       "fecha_vencimiento": "72 hs en heladera / 90 días en freezer",
       "dias_caducidad_fresco": 3,
-      "dias_caducidad_congelado": 90
+      "dias_caducidad_congelado": 90,
+      "es_destacado": false
     },
     {
       "id": "prod-103",
@@ -701,6 +702,1158 @@
       "haber_cuenta": "1.1.01 Caja y Efectivo",
       "haber_monto": 45000,
       "es_automatico": false
+    }
+  ],
+  "ventas": [
+    {
+      "id": "ped-1792280617622",
+      "numero_comprobante": "PED-761900",
+      "cliente_nombre": "Cliente Concurrente #1",
+      "cliente_telefono": "+5491155550000",
+      "cliente_direccion": "Calle Test Concurrencia #1",
+      "tipo_entrega": "retiro",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 1",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.622Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617618",
+      "numero_comprobante": "PED-761779",
+      "cliente_nombre": "Cliente Concurrente #50",
+      "cliente_telefono": "+5491155550049",
+      "cliente_direccion": "Calle Test Concurrencia #50",
+      "tipo_entrega": "delivery",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 50",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.618Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617616",
+      "numero_comprobante": "PED-761410",
+      "cliente_nombre": "Cliente Concurrente #49",
+      "cliente_telefono": "+5491155550048",
+      "cliente_direccion": "Calle Test Concurrencia #49",
+      "tipo_entrega": "retiro",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 49",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.616Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617613",
+      "numero_comprobante": "PED-761117",
+      "cliente_nombre": "Cliente Concurrente #48",
+      "cliente_telefono": "+5491155550047",
+      "cliente_direccion": "Calle Test Concurrencia #48",
+      "tipo_entrega": "delivery",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 48",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.613Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617610",
+      "numero_comprobante": "PED-760840",
+      "cliente_nombre": "Cliente Concurrente #47",
+      "cliente_telefono": "+5491155550046",
+      "cliente_direccion": "Calle Test Concurrencia #47",
+      "tipo_entrega": "retiro",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 47",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.610Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617607",
+      "numero_comprobante": "PED-760578",
+      "cliente_nombre": "Cliente Concurrente #46",
+      "cliente_telefono": "+5491155550045",
+      "cliente_direccion": "Calle Test Concurrencia #46",
+      "tipo_entrega": "delivery",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 46",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.607Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617604",
+      "numero_comprobante": "PED-760281",
+      "cliente_nombre": "Cliente Concurrente #45",
+      "cliente_telefono": "+5491155550044",
+      "cliente_direccion": "Calle Test Concurrencia #45",
+      "tipo_entrega": "retiro",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 45",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.604Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617601",
+      "numero_comprobante": "PED-760030",
+      "cliente_nombre": "Cliente Concurrente #44",
+      "cliente_telefono": "+5491155550043",
+      "cliente_direccion": "Calle Test Concurrencia #44",
+      "tipo_entrega": "delivery",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 44",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.601Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617599",
+      "numero_comprobante": "PED-759761",
+      "cliente_nombre": "Cliente Concurrente #43",
+      "cliente_telefono": "+5491155550042",
+      "cliente_direccion": "Calle Test Concurrencia #43",
+      "tipo_entrega": "retiro",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 43",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.599Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617596",
+      "numero_comprobante": "PED-759525",
+      "cliente_nombre": "Cliente Concurrente #42",
+      "cliente_telefono": "+5491155550041",
+      "cliente_direccion": "Calle Test Concurrencia #42",
+      "tipo_entrega": "delivery",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 42",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.596Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617594",
+      "numero_comprobante": "PED-759275",
+      "cliente_nombre": "Cliente Concurrente #41",
+      "cliente_telefono": "+5491155550040",
+      "cliente_direccion": "Calle Test Concurrencia #41",
+      "tipo_entrega": "retiro",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 41",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.594Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617591",
+      "numero_comprobante": "PED-758933",
+      "cliente_nombre": "Cliente Concurrente #40",
+      "cliente_telefono": "+5491155550039",
+      "cliente_direccion": "Calle Test Concurrencia #40",
+      "tipo_entrega": "delivery",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 40",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.591Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617588",
+      "numero_comprobante": "PED-758749",
+      "cliente_nombre": "Cliente Concurrente #39",
+      "cliente_telefono": "+5491155550038",
+      "cliente_direccion": "Calle Test Concurrencia #39",
+      "tipo_entrega": "retiro",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 39",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.588Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617586",
+      "numero_comprobante": "PED-758466",
+      "cliente_nombre": "Cliente Concurrente #38",
+      "cliente_telefono": "+5491155550037",
+      "cliente_direccion": "Calle Test Concurrencia #38",
+      "tipo_entrega": "delivery",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 38",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.586Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617583",
+      "numero_comprobante": "PED-758186",
+      "cliente_nombre": "Cliente Concurrente #37",
+      "cliente_telefono": "+5491155550036",
+      "cliente_direccion": "Calle Test Concurrencia #37",
+      "tipo_entrega": "retiro",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 37",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.583Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617580",
+      "numero_comprobante": "PED-757941",
+      "cliente_nombre": "Cliente Concurrente #36",
+      "cliente_telefono": "+5491155550035",
+      "cliente_direccion": "Calle Test Concurrencia #36",
+      "tipo_entrega": "delivery",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 36",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.580Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617578",
+      "numero_comprobante": "PED-757651",
+      "cliente_nombre": "Cliente Concurrente #35",
+      "cliente_telefono": "+5491155550034",
+      "cliente_direccion": "Calle Test Concurrencia #35",
+      "tipo_entrega": "retiro",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 35",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.578Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617575",
+      "numero_comprobante": "PED-757404",
+      "cliente_nombre": "Cliente Concurrente #34",
+      "cliente_telefono": "+5491155550033",
+      "cliente_direccion": "Calle Test Concurrencia #34",
+      "tipo_entrega": "delivery",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 34",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.575Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617572",
+      "numero_comprobante": "PED-757003",
+      "cliente_nombre": "Cliente Concurrente #33",
+      "cliente_telefono": "+5491155550032",
+      "cliente_direccion": "Calle Test Concurrencia #33",
+      "tipo_entrega": "retiro",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 33",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.572Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617569",
+      "numero_comprobante": "PED-756865",
+      "cliente_nombre": "Cliente Concurrente #32",
+      "cliente_telefono": "+5491155550031",
+      "cliente_direccion": "Calle Test Concurrencia #32",
+      "tipo_entrega": "delivery",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 32",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.569Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617567",
+      "numero_comprobante": "PED-756534",
+      "cliente_nombre": "Cliente Concurrente #31",
+      "cliente_telefono": "+5491155550030",
+      "cliente_direccion": "Calle Test Concurrencia #31",
+      "tipo_entrega": "retiro",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 31",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.567Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617564",
+      "numero_comprobante": "PED-756389",
+      "cliente_nombre": "Cliente Concurrente #30",
+      "cliente_telefono": "+5491155550029",
+      "cliente_direccion": "Calle Test Concurrencia #30",
+      "tipo_entrega": "delivery",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 30",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.564Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617527",
+      "numero_comprobante": "PED-752603",
+      "cliente_nombre": "Cliente Concurrente #29",
+      "cliente_telefono": "+5491155550028",
+      "cliente_direccion": "Calle Test Concurrencia #29",
+      "tipo_entrega": "retiro",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 29",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.527Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617525",
+      "numero_comprobante": "PED-752282",
+      "cliente_nombre": "Cliente Concurrente #28",
+      "cliente_telefono": "+5491155550027",
+      "cliente_direccion": "Calle Test Concurrencia #28",
+      "tipo_entrega": "delivery",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 28",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.525Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617522",
+      "numero_comprobante": "PED-752042",
+      "cliente_nombre": "Cliente Concurrente #27",
+      "cliente_telefono": "+5491155550026",
+      "cliente_direccion": "Calle Test Concurrencia #27",
+      "tipo_entrega": "retiro",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 27",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.522Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617519",
+      "numero_comprobante": "PED-751829",
+      "cliente_nombre": "Cliente Concurrente #26",
+      "cliente_telefono": "+5491155550025",
+      "cliente_direccion": "Calle Test Concurrencia #26",
+      "tipo_entrega": "delivery",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 26",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.519Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617517",
+      "numero_comprobante": "PED-751539",
+      "cliente_nombre": "Cliente Concurrente #25",
+      "cliente_telefono": "+5491155550024",
+      "cliente_direccion": "Calle Test Concurrencia #25",
+      "tipo_entrega": "retiro",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 25",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.517Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617514",
+      "numero_comprobante": "PED-751382",
+      "cliente_nombre": "Cliente Concurrente #24",
+      "cliente_telefono": "+5491155550023",
+      "cliente_direccion": "Calle Test Concurrencia #24",
+      "tipo_entrega": "delivery",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 24",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.514Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617512",
+      "numero_comprobante": "PED-751079",
+      "cliente_nombre": "Cliente Concurrente #23",
+      "cliente_telefono": "+5491155550022",
+      "cliente_direccion": "Calle Test Concurrencia #23",
+      "tipo_entrega": "retiro",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 23",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.512Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617509",
+      "numero_comprobante": "PED-750649",
+      "cliente_nombre": "Cliente Concurrente #22",
+      "cliente_telefono": "+5491155550021",
+      "cliente_direccion": "Calle Test Concurrencia #22",
+      "tipo_entrega": "delivery",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 22",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.509Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617505",
+      "numero_comprobante": "PED-750361",
+      "cliente_nombre": "Cliente Concurrente #21",
+      "cliente_telefono": "+5491155550020",
+      "cliente_direccion": "Calle Test Concurrencia #21",
+      "tipo_entrega": "retiro",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 21",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.505Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617502",
+      "numero_comprobante": "PED-749927",
+      "cliente_nombre": "Cliente Concurrente #20",
+      "cliente_telefono": "+5491155550019",
+      "cliente_direccion": "Calle Test Concurrencia #20",
+      "tipo_entrega": "delivery",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 20",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.502Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617498",
+      "numero_comprobante": "PED-749566",
+      "cliente_nombre": "Cliente Concurrente #19",
+      "cliente_telefono": "+5491155550018",
+      "cliente_direccion": "Calle Test Concurrencia #19",
+      "tipo_entrega": "retiro",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 19",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.498Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617494",
+      "numero_comprobante": "PED-749254",
+      "cliente_nombre": "Cliente Concurrente #18",
+      "cliente_telefono": "+5491155550017",
+      "cliente_direccion": "Calle Test Concurrencia #18",
+      "tipo_entrega": "delivery",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 18",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.494Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617491",
+      "numero_comprobante": "PED-748936",
+      "cliente_nombre": "Cliente Concurrente #17",
+      "cliente_telefono": "+5491155550016",
+      "cliente_direccion": "Calle Test Concurrencia #17",
+      "tipo_entrega": "retiro",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 17",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.491Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617488",
+      "numero_comprobante": "PED-748744",
+      "cliente_nombre": "Cliente Concurrente #16",
+      "cliente_telefono": "+5491155550015",
+      "cliente_direccion": "Calle Test Concurrencia #16",
+      "tipo_entrega": "delivery",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 16",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.488Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617486",
+      "numero_comprobante": "PED-748407",
+      "cliente_nombre": "Cliente Concurrente #15",
+      "cliente_telefono": "+5491155550014",
+      "cliente_direccion": "Calle Test Concurrencia #15",
+      "tipo_entrega": "retiro",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 15",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.486Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617483",
+      "numero_comprobante": "PED-748237",
+      "cliente_nombre": "Cliente Concurrente #14",
+      "cliente_telefono": "+5491155550013",
+      "cliente_direccion": "Calle Test Concurrencia #14",
+      "tipo_entrega": "delivery",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 14",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.483Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617481",
+      "numero_comprobante": "PED-746808",
+      "cliente_nombre": "Cliente Concurrente #13",
+      "cliente_telefono": "+5491155550012",
+      "cliente_direccion": "Calle Test Concurrencia #13",
+      "tipo_entrega": "retiro",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 13",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.481Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617467",
+      "numero_comprobante": "PED-746610",
+      "cliente_nombre": "Cliente Concurrente #12",
+      "cliente_telefono": "+5491155550011",
+      "cliente_direccion": "Calle Test Concurrencia #12",
+      "tipo_entrega": "delivery",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 12",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.467Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617465",
+      "numero_comprobante": "PED-746458",
+      "cliente_nombre": "Cliente Concurrente #11",
+      "cliente_telefono": "+5491155550010",
+      "cliente_direccion": "Calle Test Concurrencia #11",
+      "tipo_entrega": "retiro",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 11",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.465Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617463",
+      "numero_comprobante": "PED-746148",
+      "cliente_nombre": "Cliente Concurrente #10",
+      "cliente_telefono": "+5491155550009",
+      "cliente_direccion": "Calle Test Concurrencia #10",
+      "tipo_entrega": "delivery",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 10",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.463Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617460",
+      "numero_comprobante": "PED-745997",
+      "cliente_nombre": "Cliente Concurrente #9",
+      "cliente_telefono": "+5491155550008",
+      "cliente_direccion": "Calle Test Concurrencia #9",
+      "tipo_entrega": "retiro",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 9",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.460Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617458",
+      "numero_comprobante": "PED-745610",
+      "cliente_nombre": "Cliente Concurrente #8",
+      "cliente_telefono": "+5491155550007",
+      "cliente_direccion": "Calle Test Concurrencia #8",
+      "tipo_entrega": "delivery",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 8",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.458Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617455",
+      "numero_comprobante": "PED-745374",
+      "cliente_nombre": "Cliente Concurrente #7",
+      "cliente_telefono": "+5491155550006",
+      "cliente_direccion": "Calle Test Concurrencia #7",
+      "tipo_entrega": "retiro",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 7",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.455Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617452",
+      "numero_comprobante": "PED-745055",
+      "cliente_nombre": "Cliente Concurrente #6",
+      "cliente_telefono": "+5491155550005",
+      "cliente_direccion": "Calle Test Concurrencia #6",
+      "tipo_entrega": "delivery",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 6",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.452Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617449",
+      "numero_comprobante": "PED-744839",
+      "cliente_nombre": "Cliente Concurrente #5",
+      "cliente_telefono": "+5491155550004",
+      "cliente_direccion": "Calle Test Concurrencia #5",
+      "tipo_entrega": "retiro",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 5",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.449Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617447",
+      "numero_comprobante": "PED-744571",
+      "cliente_nombre": "Cliente Concurrente #4",
+      "cliente_telefono": "+5491155550003",
+      "cliente_direccion": "Calle Test Concurrencia #4",
+      "tipo_entrega": "delivery",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 4",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.447Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617444",
+      "numero_comprobante": "PED-744351",
+      "cliente_nombre": "Cliente Concurrente #3",
+      "cliente_telefono": "+5491155550002",
+      "cliente_direccion": "Calle Test Concurrencia #3",
+      "tipo_entrega": "retiro",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 3",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.444Z",
+      "estado": "confirmada"
+    },
+    {
+      "id": "ped-1792280617442",
+      "numero_comprobante": "PED-744097",
+      "cliente_nombre": "Cliente Concurrente #2",
+      "cliente_telefono": "+5491155550001",
+      "cliente_direccion": "Calle Test Concurrencia #2",
+      "tipo_entrega": "delivery",
+      "dia_entrega": "Viernes 17 de Octubre",
+      "total_porciones": 6,
+      "metodo_pago": "transferencia",
+      "total": 10400,
+      "notas": "Prueba de estrés multi-PC peticion 2",
+      "items": [
+        {
+          "producto_id": "prod-101",
+          "nombre": "Fettuccine Frescos al Huevo de Campo",
+          "precio": 5200,
+          "cantidad": 2
+        }
+      ],
+      "fecha": "2026-10-17T23:43:37.442Z",
+      "estado": "confirmada"
     }
   ]
 }
