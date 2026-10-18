@@ -16,8 +16,30 @@ import {
 } from "lucide-react";
 import { renderQRWithLogo, downloadQRCanvas } from "@/lib/qr-generator";
 
+function resolveAdminQRTargetUrl(): string {
+  if (typeof process !== "undefined") {
+    if (process.env.NEXT_PUBLIC_SITE_URL && process.env.NEXT_PUBLIC_SITE_URL.trim().length > 0) {
+      return process.env.NEXT_PUBLIC_SITE_URL.trim().replace(/\/$/, "");
+    }
+    if (process.env.NEXT_PUBLIC_TIENDA_URL && process.env.NEXT_PUBLIC_TIENDA_URL.trim().length > 0) {
+      return process.env.NEXT_PUBLIC_TIENDA_URL.trim().replace(/\/$/, "");
+    }
+    if (process.env.NEXT_PUBLIC_VERCEL_URL && process.env.NEXT_PUBLIC_VERCEL_URL.trim().length > 0) {
+      const vUrl = process.env.NEXT_PUBLIC_VERCEL_URL.trim().replace(/\/$/, "");
+      return vUrl.startsWith("http") ? vUrl : `https://${vUrl}`;
+    }
+  }
+  if (typeof window !== "undefined" && window.location.origin) {
+    if (window.location.origin.includes(":3001")) {
+      return window.location.origin.replace(":3001", ":3000");
+    }
+    return window.location.origin;
+  }
+  return "http://localhost:3000";
+}
+
 export default function QRGeneratorPage() {
-  const [url, setUrl] = useState<string>("http://localhost:3000");
+  const [url, setUrl] = useState<string>(() => resolveAdminQRTargetUrl());
   const [resolution, setResolution] = useState<number>(1024);
   const [qrColor, setQrColor] = useState<string>("#2C1810");
   const [includeLogo, setIncludeLogo] = useState<boolean>(true);
@@ -25,6 +47,10 @@ export default function QRGeneratorPage() {
   const [rendering, setRendering] = useState<boolean>(false);
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  useEffect(() => {
+    setUrl(resolveAdminQRTargetUrl());
+  }, []);
 
   // Renderizar o actualizar el QR en tiempo real
   const handleRender = async () => {
@@ -120,8 +146,37 @@ export default function QRGeneratorPage() {
                 {copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
               </button>
             </div>
+            <div className="flex flex-wrap items-center gap-1.5 pt-1">
+              <span className="text-[11px] font-bold text-gray-500 mr-1">Atajos rápidos:</span>
+              <button
+                type="button"
+                onClick={() => {
+                  const prod = process.env.NEXT_PUBLIC_SITE_URL || (process.env.NEXT_PUBLIC_VERCEL_URL ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}` : "https://miapastabella.vercel.app");
+                  setUrl(prod);
+                }}
+                className="px-2 py-0.5 rounded-md bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-[11px] font-bold transition-colors cursor-pointer"
+              >
+                ☁️ Producción / Vercel
+              </button>
+              <button
+                type="button"
+                onClick={() => setUrl("http://localhost:3000")}
+                className="px-2 py-0.5 rounded-md bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 text-[11px] font-bold transition-colors cursor-pointer"
+              >
+                💻 Local (:3000)
+              </button>
+              {typeof window !== "undefined" && window.location.hostname !== "localhost" && (
+                <button
+                  type="button"
+                  onClick={() => setUrl(`http://${window.location.hostname}:3000`)}
+                  className="px-2 py-0.5 rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200 text-[11px] font-bold transition-colors cursor-pointer"
+                >
+                  📱 Red Wi-Fi ({window.location.hostname})
+                </button>
+              )}
+            </div>
             <p className="text-[11px] text-gray-500">
-              Apunta a la tienda pública local (puerto 3000) o a tu dominio en producción.
+              Apunta dinámicamente a tu dominio de producción, tu red Wi-Fi o localhost:3000 para abrir la carta desde cualquier celular.
             </p>
           </div>
 

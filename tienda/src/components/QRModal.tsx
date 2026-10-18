@@ -20,19 +20,32 @@ interface QRModalProps {
   siteUrl?: string;
 }
 
+function resolveBaseUrl(propUrl?: string): string {
+  if (propUrl && propUrl.trim().length > 0) return propUrl.trim().replace(/\/$/, "");
+  if (typeof process !== "undefined") {
+    if (process.env.NEXT_PUBLIC_SITE_URL && process.env.NEXT_PUBLIC_SITE_URL.trim().length > 0) {
+      return process.env.NEXT_PUBLIC_SITE_URL.trim().replace(/\/$/, "");
+    }
+    if (process.env.NEXT_PUBLIC_VERCEL_URL && process.env.NEXT_PUBLIC_VERCEL_URL.trim().length > 0) {
+      const vUrl = process.env.NEXT_PUBLIC_VERCEL_URL.trim().replace(/\/$/, "");
+      return vUrl.startsWith("http") ? vUrl : `https://${vUrl}`;
+    }
+  }
+  if (typeof window !== "undefined" && window.location.origin) {
+    return window.location.origin;
+  }
+  return "http://localhost:3000";
+}
+
 export function QRModal({ isOpen, onClose, siteUrl }: QRModalProps) {
-  const [currentUrl, setCurrentUrl] = useState<string>(
-    siteUrl || "http://localhost:3000"
-  );
+  const [currentUrl, setCurrentUrl] = useState<string>(() => resolveBaseUrl(siteUrl));
   const [copied, setCopied] = useState<boolean>(false);
   const [rendering, setRendering] = useState<boolean>(false);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      setCurrentUrl(window.location.origin);
-    }
-  }, []);
+    setCurrentUrl(resolveBaseUrl(siteUrl));
+  }, [siteUrl]);
 
   useEffect(() => {
     if (!isOpen) return;
