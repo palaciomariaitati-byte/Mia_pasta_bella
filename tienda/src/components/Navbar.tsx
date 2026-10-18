@@ -13,6 +13,7 @@ import {
   X,
   Heart,
   Phone,
+  User,
 } from "lucide-react";
 import { useCart } from "@/context/cart-context";
 import { TiendaConfig } from "@/lib/db";
@@ -57,22 +58,22 @@ export function Navbar({ config, onOpenQR }: NavbarProps) {
 
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-2.5 sm:px-6 lg:px-8">
         {/* NAVEGACIÓN IZQUIERDA (DESKTOP) */}
-        <nav className="hidden md:flex items-center gap-6 text-sm font-semibold text-terracota-900">
+        <nav className="hidden md:flex items-center gap-7 text-sm font-semibold text-[#2C1810]">
           <button
             onClick={() => scrollToSection("inicio")}
-            className="hover:text-terracota-600 transition-colors py-1 cursor-pointer"
+            className="hover:text-terracota-700 transition-colors py-1 cursor-pointer border-b-2 border-[#7A3E2D] font-bold text-[#7A3E2D]"
           >
             Inicio
           </button>
           <button
             onClick={() => scrollToSection("productos")}
-            className="hover:text-terracota-600 transition-colors py-1 cursor-pointer"
+            className="hover:text-terracota-700 transition-colors py-1 cursor-pointer text-stone-700"
           >
             Productos
           </button>
           <button
             onClick={() => scrollToSection("nosotros")}
-            className="hover:text-terracota-600 transition-colors py-1 cursor-pointer"
+            className="hover:text-terracota-700 transition-colors py-1 cursor-pointer text-stone-700"
           >
             Nosotros
           </button>
@@ -95,7 +96,7 @@ export function Navbar({ config, onOpenQR }: NavbarProps) {
           </div>
           <div className="text-left">
             <div className="flex items-center gap-1.5">
-              <span className="font-serif text-xl sm:text-2xl font-black tracking-tight text-terracota-900 leading-none">
+              <span className="font-serif text-xl sm:text-2xl font-black tracking-tight text-terracota-950 leading-none">
                 {config.nombre_tienda || "Mia Pasta Bella"}
               </span>
               {/* BANDERA ITALIANA TRICOLOR MICRO-BADGE */}
@@ -109,21 +110,32 @@ export function Navbar({ config, onOpenQR }: NavbarProps) {
               </span>
             </div>
             <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-oliva-700 block mt-0.5">
-              Fábrica Artesanal de Pastas
+              El sabor de sentirse en casa
             </span>
           </div>
         </div>
 
-        {/* ACCIONES DERECHA: BÚSQUEDA, QR, WHATSAPP Y CARRITO */}
+        {/* ACCIONES DERECHA: BÚSQUEDA, PERFIL, WHATSAPP Y CARRITO */}
         <div className="flex items-center gap-2 sm:gap-3">
           {/* BOTÓN BÚSQUEDA RÁPIDA */}
           <button
             onClick={() => scrollToSection("productos")}
-            className="p-2 rounded-full text-stone-700 hover:text-terracota-900 hover:bg-crema-200 transition-colors hidden sm:flex items-center justify-center"
-            title="Buscar productos"
+            className="p-2 rounded-full text-stone-700 hover:text-terracota-900 hover:bg-[#EDE4D3] transition-colors flex items-center justify-center cursor-pointer"
+            title="Buscar pastas"
           >
-            <Search className="h-4 w-4" />
+            <Search className="h-4.5 w-4.5" />
           </button>
+
+          {/* BOTÓN PERFIL / CONTACTO RÁPIDO */}
+          <a
+            href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="p-2 rounded-full text-stone-700 hover:text-terracota-900 hover:bg-[#EDE4D3] transition-colors hidden sm:flex items-center justify-center cursor-pointer"
+            title="Atención directa por WhatsApp"
+          >
+            <User className="h-4.5 w-4.5" />
+          </a>
 
           {/* BOTÓN CÓDIGO QR PORTABLE */}
           {onOpenQR && (
@@ -137,41 +149,21 @@ export function Navbar({ config, onOpenQR }: NavbarProps) {
             </button>
           )}
 
-          {/* UBICACIÓN GOOGLE MAPS */}
-          <a
-            href={config.google_maps_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hidden sm:flex items-center gap-1.5 rounded-full border border-crema-400 bg-white px-3 py-1.5 text-xs font-semibold text-terracota-800 hover:bg-crema-200 transition-colors shadow-xs"
-            title="Ver ubicación en Google Maps"
-          >
-            <MapPin className="h-3.5 w-3.5 text-terracota-600 flex-shrink-0" />
-            <span className="hidden md:inline">Ubicación</span>
-          </a>
-
-          {/* BOTÓN WHATSAPP */}
-          <a
-            href={whatsappUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 rounded-full bg-oliva-600 hover:bg-oliva-700 text-white px-3 sm:px-3.5 py-1.5 text-xs font-bold transition-all shadow-xs active:scale-95"
-            title="Escribir por WhatsApp"
-          >
-            <MessageCircle className="h-3.5 w-3.5 fill-current" />
-            <span className="hidden lg:inline">WhatsApp</span>
-          </a>
-
           {/* CANASTA DE COMPRAS CON CONTADOR DINÁMICO */}
           <button
             onClick={() => setIsCartOpen(true)}
-            className="relative rounded-full bg-terracota-700 hover:bg-terracota-800 text-white p-2 sm:px-3.5 sm:py-2 transition-all shadow-sm active:scale-95 flex items-center gap-2"
+            className="relative rounded-full bg-[#4A5A3F] hover:bg-[#3D4C33] text-white p-2 sm:px-3.5 sm:py-2 transition-all shadow-sm active:scale-95 flex items-center gap-2 cursor-pointer"
             aria-label="Abrir carrito de compras"
           >
             <ShoppingBag className="h-4 w-4" />
             <span className="hidden sm:inline text-xs font-bold">Pedido</span>
-            {totalCount > 0 && (
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-400 text-[11px] font-black text-terracota-950 shadow-sm ring-2 ring-white animate-pulse">
+            {totalCount > 0 ? (
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-400 text-[11px] font-black text-stone-950 shadow-sm ring-2 ring-white animate-pulse">
                 {totalCount}
+              </span>
+            ) : (
+              <span className="flex h-4.5 w-4.5 items-center justify-center rounded-full bg-white/20 text-[10px] font-bold text-white">
+                0
               </span>
             )}
           </button>

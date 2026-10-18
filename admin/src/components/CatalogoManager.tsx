@@ -55,7 +55,7 @@ export const FOTOS_PREDETERMINADAS = [
   {
     titulo: "Ravioles Rellenos con Sémola Espolvoreada",
     categoria: "ravioles",
-    url: "https://images.unsplash.com/photo-1621996346565-e3d5d6281781?auto=format&fit=crop&w=800&q=80",
+    url: "https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=800&q=80",
   },
   {
     titulo: "Fettuccine Frescos al Huevo de Granja",
@@ -65,7 +65,7 @@ export const FOTOS_PREDETERMINADAS = [
   {
     titulo: "Tagliatelle Verdes con Espinaca Molida",
     categoria: "tallarines",
-    url: "https://images.unsplash.com/photo-1621996346565-e3d5d6281781?auto=format&fit=crop&w=800&q=80",
+    url: "https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=800&q=80",
   },
   {
     titulo: "Cintas Rojas al Pimiento Morrón Asado",

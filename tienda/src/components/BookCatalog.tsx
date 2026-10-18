@@ -33,7 +33,6 @@ interface BookCatalogProps {
   categorias: CategoriaItem[];
   productos: ProductoItem[];
   config: TiendaConfig;
-  onOpenSplash?: () => void;
   onOpenQR?: () => void;
 }
 
@@ -116,7 +115,6 @@ export function BookCatalog({
   categorias,
   productos,
   config,
-  onOpenSplash,
   onOpenQR,
 }: BookCatalogProps) {
   // selectedCategoryId: null = Portada Principal Limpia, string = Subpágina de Categoría
@@ -522,166 +520,139 @@ export function BookCatalog({
   // (Sin grilla redundante de productos para una experiencia directa y elegante)
   // ==============================================================================
   return (
-    <div className="w-full">
-      {/* 1. HERO BANNER PRINCIPAL (EDITORIAL FULL-WIDTH) */}
+    <div className="w-full bg-[#FAF6EE] text-[#2C1810]">
+      {/* 1. HERO BANNER PRINCIPAL (SPLIT EDITORIAL SOBRE FONDO CREMA ARTESANAL) */}
       <section
         id="inicio"
-        className="relative min-h-[580px] sm:min-h-[640px] flex items-center justify-center overflow-hidden bg-stone-950 text-white"
+        className="relative bg-[#FAF6EE] overflow-hidden pt-8 pb-12 sm:pt-12 sm:pb-16 border-b border-[#E8DFC8]"
       >
-        {/* FOTO PANORÁMICA DE FONDO (AMASADO ARTESANAL / SÉMOLA CANDEAL) */}
-        <div className="absolute inset-0 z-0">
-          <Image
-            src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=2000&q=80"
-            alt="Amasado de Pastas Artesanales Mía Pasta Bella"
-            fill
-            className="object-cover object-center opacity-45 scale-105 transform motion-safe:animate-pulse"
-            priority
-            sizes="100vw"
-          />
-          {/* DEGRADADOS Y VIÑETA DE CINE EDITORIAL */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#212A1B] via-stone-950/70 to-stone-950/85" />
-          <div className="absolute inset-0 bg-radial-gradient from-transparent via-stone-950/50 to-stone-950/90 pointer-events-none" />
-        </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+            {/* COLUMNA IZQUIERDA: MENSAJE DE AUTOR & LLAMADA A LA ACCIÓN */}
+            <div className="lg:col-span-5 flex flex-col items-center lg:items-start text-center lg:text-left">
+              {/* ENCABEZADO "PASTAS ARTESANALES" CON CORAZÓN */}
+              <div className="flex flex-col items-center lg:items-start gap-1 mb-5">
+                <div className="flex items-center gap-3">
+                  <span className="h-px w-10 sm:w-16 bg-[#B5A48B]" />
+                  <span className="text-[11px] sm:text-xs font-bold uppercase tracking-[0.25em] text-[#4A5A3F]">
+                    Pastas Artesanales
+                  </span>
+                  <span className="h-px w-10 sm:w-16 bg-[#B5A48B]" />
+                </div>
+                <div className="w-full flex justify-center text-[#7A3E2D] pt-0.5">
+                  <span className="text-sm">♡</span>
+                </div>
+              </div>
 
-        {/* CONTENIDO EDITORIAL CENTRAL */}
-        <div className="relative z-10 mx-auto max-w-5xl px-4 py-16 sm:px-6 lg:px-8 text-center flex flex-col items-center">
-          {/* LÍNEA DE ENCABEZADO CON CORAZÓN */}
-          <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-amber-400/15 border border-amber-400/40 backdrop-blur-md mb-6 animate-fadeIn">
-            <span className="h-px w-6 sm:w-10 bg-gradient-to-r from-transparent to-amber-300" />
-            <Heart className="h-4 w-4 text-terracota-400 fill-terracota-400" />
-            <span className="text-xs sm:text-sm font-bold tracking-widest uppercase text-amber-200">
-              Pastas Artesanales de Autor
-            </span>
-            <span className="h-px w-6 sm:w-10 bg-gradient-to-l from-transparent to-amber-300" />
-          </div>
+              {/* TÍTULO PRINCIPAL Y ESLOGAN EDITORIAL */}
+              <h1 className="font-serif text-3.5xl sm:text-5xl md:text-5.5xl font-black text-[#2C1810] leading-[1.12] tracking-tight">
+                El verdadero sabor
+                <span className="block font-serif">de la pasta,</span>
+                <span className="block font-serif italic font-normal text-[#7A3E2D] mt-1 text-3xl sm:text-4.5xl md:text-5xl">
+                  hecha con el corazón
+                </span>
+              </h1>
 
-          {/* TÍTULO PRINCIPAL EN TIPOGRAFÍA SERIF */}
-          <h1 className="font-serif text-3xl sm:text-5xl md:text-6xl font-black text-white tracking-tight leading-[1.15] max-w-4xl drop-shadow-lg">
-            El verdadero sabor de la pasta,{" "}
-            <span className="italic font-normal text-amber-300 underline decoration-terracota-500/60 decoration-wavy decoration-1 underline-offset-8">
-              hecha con el corazón
-            </span>
-          </h1>
+              {/* DESCRIPCIÓN ARTESANAL */}
+              <p className="mt-4 text-xs sm:text-sm text-stone-700 leading-relaxed max-w-md">
+                Amasadas a mano con 100% sémola pura de trigo candeal y huevos de granja. Elaboración
+                fresca por encargo para disfrutar en familia del verdadero sabor casero.
+              </p>
 
-          {/* SUBTÍTULO INSTITUCIONAL */}
-          <p className="mt-5 text-sm sm:text-lg text-crema-200/90 max-w-2xl font-sans leading-relaxed drop-shadow-sm">
-            Amasamos a mano cada madrugada con 100% sémola de trigo candeal y huevos de campo.
-            Elaboración fresca por encargo sin conservantes ni aditivos químicos.
-          </p>
+              {/* BOTÓN "VER PRODUCTOS →" (PÍLDORA VERDE OLIVA ELEGANTE) */}
+              <div className="mt-7 flex flex-wrap items-center justify-center lg:justify-start gap-3">
+                <button
+                  onClick={scrollToCategories}
+                  className="inline-flex items-center gap-3 px-8 py-3.5 rounded-full bg-[#4A5A3F] hover:bg-[#3D4C33] text-white text-xs sm:text-sm font-bold uppercase tracking-wider shadow-md hover:shadow-lg transition-all active:scale-95 cursor-pointer"
+                >
+                  <span>VER PRODUCTOS</span>
+                  <ArrowRight className="h-4 w-4" />
+                </button>
 
-          {/* BADGES RÁPIDOS DE FÁBRICA */}
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-2.5 sm:gap-4 text-xs text-amber-100 font-semibold">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-stone-900/60 border border-stone-700/60 px-3.5 py-1.5 backdrop-blur-sm">
-              🌾 Sémola Pura Candeal
-            </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-stone-900/60 border border-stone-700/60 px-3.5 py-1.5 backdrop-blur-sm">
-              ❄️ 72 hs Heladera / 90d Freezer
-            </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-stone-900/60 border border-stone-700/60 px-3.5 py-1.5 backdrop-blur-sm">
-              ⏱️ 4-5 min Cocción Rápida
-            </span>
-          </div>
+                <a
+                  href={whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-white hover:bg-stone-50 text-[#4A5A3F] border border-[#C5BBA6] text-xs sm:text-sm font-bold shadow-xs hover:shadow-sm transition-all active:scale-95"
+                >
+                  <MessageCircle className="h-4 w-4 text-emerald-600 fill-current" />
+                  <span>Por Encargo</span>
+                </a>
+              </div>
+            </div>
 
-          {/* BOTONES DE LLAMADA A LA ACCIÓN (CTA) */}
-          <div className="mt-8 flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
-            <button
-              onClick={scrollToCategories}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-terracota-600 via-terracota-700 to-[#5A2B1D] text-white px-8 py-4 text-sm sm:text-base font-black tracking-wide shadow-xl hover:shadow-terracota-600/40 hover:scale-105 transition-all border-2 border-amber-400 active:scale-95 cursor-pointer"
-            >
-              <span>VER PRODUCTOS</span>
-              <ArrowRight className="h-5 w-5 text-amber-300" />
-            </button>
-
-            <a
-              href={whatsappUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 rounded-2xl bg-oliva-700/90 hover:bg-oliva-600 text-white px-7 py-4 text-sm sm:text-base font-bold shadow-md hover:scale-105 transition-all border border-oliva-500/60 active:scale-95 backdrop-blur-sm"
-            >
-              <MessageCircle className="h-5 w-5 fill-current" />
-              <span>Pedir por WhatsApp</span>
-            </a>
-          </div>
-
-          {/* TANDA ACTIVA INFORMATIVA */}
-          <div className="mt-10 rounded-2xl border border-amber-400/30 bg-stone-900/80 backdrop-blur-md px-5 py-3 flex flex-wrap items-center justify-center gap-3 text-xs text-amber-200">
-            <span className="flex h-2.5 w-2.5 relative">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
-            </span>
-            <span className="font-extrabold uppercase tracking-wider text-amber-300">
-              Tanda Fresca Activa:
-            </span>
-            <strong className="text-white font-bold">
-              {config.proxima_tanda_fecha || "Viernes 17 de Octubre"}
-            </strong>
-            <span className="text-amber-500">•</span>
-            <span className="text-stone-300">
-              {config.cierre_pedidos_info || "Pedidos por encargo hasta agotar cupo de amasado"}
-            </span>
+            {/* COLUMNA DERECHA: FOTO EDITORIAL DEL AMASADO / FETTUCCINE FRESCOS */}
+            <div className="lg:col-span-7 flex justify-center lg:justify-end">
+              <div className="relative w-full max-w-2xl h-[320px] sm:h-[420px] md:h-[480px] rounded-3xl overflow-hidden shadow-xl border-4 border-white/80 bg-stone-100">
+                <Image
+                  src="https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=1200&q=80"
+                  alt="Pastas Frescas Artesanales Mía Pasta Bella"
+                  fill
+                  className="object-cover"
+                  priority
+                  sizes="(max-width: 1024px) 100vw, 58vw"
+                />
+                {/* VIÑETA SUTIL INFERIOR */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent pointer-events-none" />
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* 2. SECCIÓN "NUESTRAS PASTAS" (GRID CIRCULAR DE CATEGORÍAS TOTALMENTE INTERACTIVO) */}
+      {/* 2. SECCIÓN "NUESTRAS PASTAS" (CÍRCULOS DE CATEGORÍA INTERACTIVOS) */}
       <section
-        id="nuestras-pastas"
-        className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
+        id="productos"
+        className="py-14 sm:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
       >
         <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-oliva-700 bg-oliva-100/90 border border-oliva-300/80 px-3.5 py-1 rounded-full mb-3">
-            <Award className="h-3.5 w-3.5 text-oliva-700" />
-            <span>Fábrica de Autor</span>
+          {/* TÍTULO EDITORIAL CON LÍNEAS LATERALES Y CORAZÓN */}
+          <div className="flex items-center justify-center gap-4 mb-1">
+            <span className="h-px w-12 sm:w-24 bg-[#B5A48B]" />
+            <h2 className="font-serif text-2xl sm:text-4xl md:text-4.5xl font-black text-[#2C1810] tracking-tight">
+              Nuestras Pastas
+            </h2>
+            <span className="h-px w-12 sm:w-24 bg-[#B5A48B]" />
           </div>
-          <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-black text-[#2C1810] tracking-tight">
-            Nuestras Pastas
-          </h2>
-          <p className="mt-3 font-serif italic text-base sm:text-lg text-terracota-800/90 max-w-xl mx-auto">
-            Recetas clásicas, con el amor de siempre. Elegí una categoría para explorar todas sus
-            variedades.
+
+          <div className="text-[#7A3E2D] text-sm my-0.5">♡</div>
+
+          <p className="font-serif italic text-sm sm:text-base md:text-lg text-stone-700 max-w-xl mx-auto mt-1">
+            Recetas clásicas, con el amor de siempre.
           </p>
-          <div className="h-1 w-16 bg-amber-400 mx-auto mt-4 rounded-full" />
         </div>
 
         {/* GRILLA DE CÍRCULOS DE CATEGORÍA INTERACTIVOS */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 sm:gap-8 max-w-6xl mx-auto">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 sm:gap-8 max-w-6xl mx-auto">
           {categorias.map((cat) => {
             const catImage = getCategoryImageUrl(cat, productos);
-            const countProds = productos.filter((p) => p.categoria_id === cat.id).length;
 
             return (
               <button
                 key={cat.id}
                 onClick={() => handleOpenCategory(cat.id)}
-                className="group flex flex-col items-center text-center p-3 sm:p-4 rounded-3xl transition-all hover:bg-white hover:shadow-md cursor-pointer active:scale-95"
+                className="group flex flex-col items-center text-center transition-all cursor-pointer active:scale-95"
               >
-                {/* CONTENEDOR CIRCULAR DE LA FOTO (ALTA COCINA) */}
-                <div className="relative h-28 w-28 sm:h-36 sm:w-36 md:h-40 md:w-40 rounded-full mx-auto overflow-hidden bg-crema-200 shadow-md transition-all duration-300 group-hover:scale-105 border-3 border-[#DFD3BD] group-hover:border-terracota-500 group-hover:shadow-xl">
-                  <Image
-                    src={catImage}
-                    alt={cat.nombre}
-                    fill
-                    className="object-cover group-hover:scale-110 transition-transform duration-500"
-                    sizes="(max-width: 640px) 112px, (max-width: 768px) 144px, 160px"
-                  />
-                  {/* OVERLAY SUTIL CON TEXTO AL HOVER */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-stone-900/60 via-stone-900/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-3">
-                    <span className="text-[11px] font-bold text-amber-200 uppercase tracking-wider flex items-center gap-1">
-                      <span>Ver carta</span>
-                      <ArrowRight className="h-3 w-3" />
-                    </span>
+                {/* CONTENEDOR CIRCULAR SUAVE */}
+                <div className="relative h-28 w-28 sm:h-34 sm:w-34 md:h-36 md:w-36 rounded-full mx-auto p-1.5 bg-[#EDE4D3] shadow-xs group-hover:shadow-md transition-all duration-300 group-hover:scale-105 border border-[#DFD3BD] group-hover:border-[#4A5A3F]">
+                  <div className="relative w-full h-full rounded-full overflow-hidden bg-white">
+                    <Image
+                      src={catImage}
+                      alt={cat.nombre}
+                      fill
+                      className="object-cover group-hover:scale-110 transition-transform duration-500"
+                      sizes="(max-width: 640px) 112px, (max-width: 768px) 136px, 144px"
+                    />
                   </div>
                 </div>
 
                 {/* TÍTULO DE LA CATEGORÍA */}
-                <span className="font-serif font-black text-sm sm:text-base md:text-lg mt-3.5 leading-snug transition-colors text-stone-900 group-hover:text-terracota-800">
+                <span className="font-serif font-bold text-sm sm:text-base mt-3 transition-colors text-stone-900 group-hover:text-[#7A3E2D]">
                   {cat.nombre}
                 </span>
 
-                {/* VARIEDADES DISPONIBLES */}
-                <span className="text-[11px] font-bold text-stone-700 mt-1 uppercase tracking-wider">
-                  {countProds} {countProds === 1 ? "variedad" : "variedades"}
-                </span>
+                {/* LÍNEA DECORATIVA DELGADA BAJO EL NOMBRE */}
+                <span className="block w-10 sm:w-12 h-[2px] bg-[#C5BBA6] group-hover:bg-[#7A3E2D] mt-1.5 transition-colors rounded-full" />
               </button>
             );
           })}
@@ -689,81 +660,59 @@ export function BookCatalog({
       </section>
 
       {/* 3. BANDA DE VALORES ARTESANALES (4 PILARES INSTITUCIONALES) */}
-      <section className="bg-gradient-to-b from-[#FAF6EE] to-[#F4ECE0] py-16 px-4 sm:px-6 lg:px-8 border-t border-b border-[#E8DFC8]">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-10">
-            <span className="text-[11px] font-bold uppercase tracking-widest text-terracota-700 block mb-2">
-              El Manifiesto de Fábrica
-            </span>
-            <h3 className="font-serif text-2xl sm:text-3xl md:text-4xl font-black text-[#2C1810]">
-              La Calidad de lo Auténtico
-            </h3>
-            <div className="h-1 w-12 bg-amber-400 mx-auto mt-3 rounded-full" />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+      <section className="bg-[#FAF6EE] py-12 px-4 sm:px-6 lg:px-8 border-t border-b border-[#E8DFC8]">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-4 divide-y sm:divide-y-0 sm:divide-x divide-[#DFD3BD] text-center">
             {/* PILAR 1 */}
-            <div className="rounded-3xl bg-white/90 border border-[#DFD3BD] p-6 shadow-xs hover:shadow-md transition-shadow text-center sm:text-left flex flex-col justify-between">
-              <div>
-                <div className="h-12 w-12 rounded-2xl bg-oliva-100 border border-oliva-300 text-oliva-800 flex items-center justify-center mb-4 mx-auto sm:mx-0">
-                  <Leaf className="h-6 w-6 text-oliva-700" />
-                </div>
-                <h4 className="font-serif text-lg font-bold text-terracota-950 mb-2">
-                  1. Ingredientes seleccionados
-                </h4>
-                <p className="text-xs text-stone-700 leading-relaxed">
-                  100% sémola de trigo candeal pura, huevos de granja frescos y verduras naturales de
-                  estación sin químicos ni aditivos.
-                </p>
+            <div className="px-4 py-3 flex flex-col items-center">
+              <div className="h-10 w-10 text-[#4A5A3F] flex items-center justify-center mb-2">
+                <Leaf className="h-6 w-6 stroke-[1.5]" />
               </div>
+              <h4 className="font-serif text-sm sm:text-base font-bold text-[#2C1810]">
+                Ingredientes seleccionados
+              </h4>
+              <p className="text-[11px] text-stone-600 mt-1 max-w-[200px]">
+                100% sémola candeal pura y huevos de granja frescos.
+              </p>
             </div>
 
             {/* PILAR 2 */}
-            <div className="rounded-3xl bg-white/90 border border-[#DFD3BD] p-6 shadow-xs hover:shadow-md transition-shadow text-center sm:text-left flex flex-col justify-between">
-              <div>
-                <div className="h-12 w-12 rounded-2xl bg-amber-100 border border-amber-300 text-amber-800 flex items-center justify-center mb-4 mx-auto sm:mx-0">
-                  <Home className="h-6 w-6 text-amber-700" />
-                </div>
-                <h4 className="font-serif text-lg font-bold text-terracota-950 mb-2">
-                  2. Elaboración artesanal
-                </h4>
-                <p className="text-xs text-stone-700 leading-relaxed">
-                  Amasado diario a la vista en lotes limitados, respetando el descanso de la masa, el
-                  corte manual y el armado prolijo.
-                </p>
+            <div className="px-4 py-3 flex flex-col items-center">
+              <div className="h-10 w-10 text-[#4A5A3F] flex items-center justify-center mb-2">
+                <Home className="h-6 w-6 stroke-[1.5]" />
               </div>
+              <h4 className="font-serif text-sm sm:text-base font-bold text-[#2C1810]">
+                Elaboración artesanal
+              </h4>
+              <p className="text-[11px] text-stone-600 mt-1 max-w-[200px]">
+                Amasado diario en lotes cuidados por encargo.
+              </p>
             </div>
 
             {/* PILAR 3 */}
-            <div className="rounded-3xl bg-white/90 border border-[#DFD3BD] p-6 shadow-xs hover:shadow-md transition-shadow text-center sm:text-left flex flex-col justify-between">
-              <div>
-                <div className="h-12 w-12 rounded-2xl bg-terracota-100 border border-terracota-300 text-terracota-800 flex items-center justify-center mb-4 mx-auto sm:mx-0">
-                  <Heart className="h-6 w-6 text-terracota-700 fill-terracota-700/20" />
-                </div>
-                <h4 className="font-serif text-lg font-bold text-terracota-950 mb-2">
-                  3. Sabor casero en cada bocado
-                </h4>
-                <p className="text-xs text-stone-700 leading-relaxed">
-                  Recetas familiares de herencia italiana pensadas para revivir el clásico almuerzo
-                  de domingo alrededor de la mesa.
-                </p>
+            <div className="px-4 py-3 flex flex-col items-center">
+              <div className="h-10 w-10 text-[#7A3E2D] flex items-center justify-center mb-2">
+                <Heart className="h-6 w-6 stroke-[1.5]" />
               </div>
+              <h4 className="font-serif text-sm sm:text-base font-bold text-[#2C1810]">
+                Sabor casero en cada bocado
+              </h4>
+              <p className="text-[11px] text-stone-600 mt-1 max-w-[200px]">
+                Tradición familiar italiana en cada receta de fábrica.
+              </p>
             </div>
 
             {/* PILAR 4 */}
-            <div className="rounded-3xl bg-white/90 border border-[#DFD3BD] p-6 shadow-xs hover:shadow-md transition-shadow text-center sm:text-left flex flex-col justify-between">
-              <div>
-                <div className="h-12 w-12 rounded-2xl bg-stone-100 border border-stone-300 text-stone-800 flex items-center justify-center mb-4 mx-auto sm:mx-0">
-                  <Truck className="h-6 w-6 text-stone-700" />
-                </div>
-                <h4 className="font-serif text-lg font-bold text-terracota-950 mb-2">
-                  4. Envíos y retiro en fábrica
-                </h4>
-                <p className="text-xs text-stone-700 leading-relaxed">
-                  Cadena de frío garantizada para conservar la pasta fresca o congelada, con retiros
-                  programados en tandas activas.
-                </p>
+            <div className="px-4 py-3 flex flex-col items-center">
+              <div className="h-10 w-10 text-[#4A5A3F] flex items-center justify-center mb-2">
+                <Truck className="h-6 w-6 stroke-[1.5]" />
               </div>
+              <h4 className="font-serif text-sm sm:text-base font-bold text-[#2C1810]">
+                Envíos y retiro en fábrica
+              </h4>
+              <p className="text-[11px] text-stone-600 mt-1 max-w-[200px]">
+                Cadena de frío asegurada y entregas programadas.
+              </p>
             </div>
           </div>
         </div>
@@ -822,16 +771,6 @@ export function BookCatalog({
                 <MessageCircle className="h-4 w-4 fill-current" />
                 <span>Conversar con el Maestro Pastero</span>
               </a>
-
-              {onOpenSplash && (
-                <button
-                  onClick={onOpenSplash}
-                  className="inline-flex items-center gap-1.5 px-4 py-3 rounded-2xl bg-white border border-[#DFD3BD] hover:border-terracota-400 text-stone-700 text-xs font-bold transition-all shadow-xs"
-                >
-                  <RotateCcw className="h-3.5 w-3.5 text-terracota-600" />
-                  <span>Ver Presentación</span>
-                </button>
-              )}
             </div>
           </div>
         </div>
