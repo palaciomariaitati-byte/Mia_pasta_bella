@@ -7,10 +7,15 @@
     "admin"
   ],
   "scripts": {
+    "dev": "npm run dev:tienda",
     "dev:tienda": "npm run dev --workspace=tienda",
     "dev:admin": "npm run dev --workspace=admin",
+    "build": "npm run build:tienda",
     "build:tienda": "npm run build --workspace=tienda",
-    "build:admin": "npm run build --workspace=admin"
+    "build:admin": "npm run build --workspace=admin",
+    "start": "npm run start:tienda",
+    "start:tienda": "npm run start --workspace=tienda",
+    "start:admin": "npm run start --workspace=admin"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",
